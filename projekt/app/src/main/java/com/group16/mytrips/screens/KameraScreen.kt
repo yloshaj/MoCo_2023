@@ -32,7 +32,6 @@ fun CamScreen() {
             text = "Location Name",
             fontSize = 20.sp,
             modifier = Modifier.padding(8.dp)
-
         )
         Box {
             Image(
