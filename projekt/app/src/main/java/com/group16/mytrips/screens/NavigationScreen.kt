@@ -1,5 +1,6 @@
 package com.group16.mytrips.screens
 
+import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
@@ -8,6 +9,11 @@ import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.heightIn
 import androidx.compose.foundation.layout.offset
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.lazy.LazyColumn
+import androidx.compose.foundation.lazy.items
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.rounded.Search
 import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.Icon
@@ -32,15 +38,41 @@ import androidx.compose.ui.draw.scale
 import androidx.compose.ui.unit.sp
 import kotlin.math.roundToInt
 
+val location = Location(R.drawable.ic_dummylocationpic, "Location Name", 2300)
+val locationList = listOf(location, location, location, location, location, location)
+
+
+@Composable
+fun SearchBar() {
+    Card(modifier = Modifier.fillMaxWidth()) {
+        Row() {
+
+        }
+    }
+}
+
+@Composable
+fun LocationColumn (list: List<Location>) {
+    LazyColumn() {
+        items(list) {location ->
+            LocationCard(locationDefaultPicture = painterResource(id = location.locationPicture),
+                locationName = location.locationName, locationDistance = location.distance)
+        }
+    }
+}
 
 @Composable
 fun LocationCard (locationDefaultPicture: Painter, locationName: String, locationDistance: Int) {
     Card(
         colors = CardDefaults.cardColors(Color.White),
-        modifier = Modifier.heightIn(0.dp,90.dp),
-        shape = ShapeDefaults.ExtraSmall
+        modifier = Modifier
+            .heightIn(0.dp, 80.dp)
+            .padding(0.dp, 1.dp)
+            .background(Color.White),
+        shape = ShapeDefaults.ExtraSmall,
+        elevation = CardDefaults.cardElevation(2.dp)
     ) {
-        Box() {
+        Column(horizontalAlignment = Alignment.CenterHorizontally) {
             Row(
                 verticalAlignment = Alignment.CenterVertically,
                 horizontalArrangement = Arrangement.SpaceEvenly,
@@ -65,11 +97,20 @@ fun LocationCard (locationDefaultPicture: Painter, locationName: String, locatio
                     painter = locationDefaultPicture,
                     contentDescription = "Default Picture of Sight",
                     tint = Color.Unspecified,
-                    modifier = Modifier.scale(0.65f)
-                        .offset(32.dp,0.dp)
+                    modifier = Modifier
+                        .scale(0.65f)
+                        .offset(32.dp, 0.dp)
                     )
 
             }
+            //Box(modifier = Modifier.size(120.dp, 5.dp).background(Color.Gray))
+                Card() {
+                    Icon (
+                        Icons.Rounded.Search,
+                        contentDescription = null
+                            )
+                }
+
         }
     }
 }
@@ -83,6 +124,8 @@ fun PreviewNavScreen() {
     var locationDistance by remember {
         mutableStateOf(1345)
     }
-    LocationCard(locationDefaultPicture = painterResource(id = R.drawable.ic_dummylocationpic),
-        locationName ="Location Name" , locationDistance = locationDistance )
+    SearchBar()
+    //LocationColumn(list = locationList)
+    //LocationCard(locationDefaultPicture = painterResource(id = R.drawable.ic_dummylocationpic),
+    //    locationName ="Location Name" , locationDistance = locationDistance )
 }
