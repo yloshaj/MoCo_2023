@@ -1,5 +1,6 @@
 package com.group16.mytrips.screens
 
+import android.widget.SearchView
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
@@ -7,7 +8,6 @@ import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
-import androidx.compose.foundation.layout.fillMaxHeight
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.heightIn
@@ -16,14 +16,21 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
+import androidx.compose.foundation.text.KeyboardActions
 import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.rounded.Close
 import androidx.compose.material.icons.rounded.Search
 import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.CardElevation
+import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Icon
+import androidx.compose.material3.IconButton
 import androidx.compose.material3.ShapeDefaults
 import androidx.compose.material3.Text
+import androidx.compose.material3.TextField
+import androidx.compose.material3.TextFieldColors
+import androidx.compose.material3.TextFieldDefaults
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
@@ -41,13 +48,20 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.draw.alpha
 import androidx.compose.ui.draw.scale
+import androidx.compose.ui.input.key.Key
+import androidx.compose.ui.input.key.KeyEvent
+import androidx.compose.ui.platform.LocalFocusManager
+import androidx.compose.ui.text.input.TextFieldValue
 import androidx.compose.ui.unit.sp
+import kotlinx.coroutines.delay
 import kotlin.math.roundToInt
 
 val location = Location(R.drawable.ic_dummylocationpic, "Location Name", 2300)
 val locationList = listOf(location, location, location, location, location, location)
+
 @Composable
 fun NavigationScreen(){
+
     Box {
 
         Maps()
@@ -71,25 +85,42 @@ fun Maps(){
     }
 
 }
+@OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun SearchBar() {
+    val textState = remember {
+        mutableStateOf(TextFieldValue(""))
+    }
     Card(modifier = Modifier
         .fillMaxWidth()
-        .padding(8.dp,17.dp)
+        .padding(8.dp, 17.dp)
         .size(0.dp, 50.dp), shape = ShapeDefaults.Large,
         colors = CardDefaults.cardColors(Color.White),
         elevation = CardDefaults.cardElevation(10.dp)
     ) {
         Row(modifier = Modifier.fillMaxSize(), verticalAlignment = Alignment.CenterVertically) {
-            Box(modifier = Modifier.weight(7f)){
+            TextField(colors = TextFieldDefaults.textFieldColors(containerColor = Color.White, disabledPlaceholderColor = Color.White),
+                value = textState.value,
+                onValueChange = { value -> textState.value = value },
+                modifier = Modifier.weight(7f),
+                singleLine = true,
 
-            }
-            Icon(Icons.Rounded.Search, modifier = Modifier
-                .weight(1f)
-                .scale(1.2f)
-                .clickable {  }
-                .alpha(0.6f),
-                contentDescription = null)
+                trailingIcon = {
+                    val focusManager = LocalFocusManager.current
+
+                    IconButton(onClick = {
+                        focusManager.clearFocus()
+                        textState.value = TextFieldValue("")
+
+                    }) {
+                        Icon(Icons.Rounded.Search, modifier = Modifier
+                            .weight(1f)
+                            .scale(1.2f)
+                            .alpha(0.6f),
+                            contentDescription = null)
+
+                    }
+                })
         }
     }
 }
