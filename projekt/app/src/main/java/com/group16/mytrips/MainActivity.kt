@@ -31,7 +31,7 @@ import com.group16.mytrips.ui.theme.MyTripsTheme
 
 class MainActivity : ComponentActivity() {
 
-    class MainActivity : ComponentActivity() {
+
         private val requestPermissionLauncher = registerForActivityResult(
             ActivityResultContracts.RequestPermission()
         ) { isGranted ->
@@ -53,23 +53,23 @@ class MainActivity : ComponentActivity() {
         private fun requestCameraPermission() {
             when {
                 ContextCompat.checkSelfPermission(
-                    this,
-                    android.Manifest.permission.CAMERA
+                        this,
+                        android.Manifest.permission.CAMERA
                 )
                         == PackageManager.PERMISSION_GRANTED -> {
                     Log.i("ja", "Kamera zugriff bereits erlaubt")
                 }
 
                 ActivityCompat.shouldShowRequestPermissionRationale(
-                    this,
-                    android.Manifest.permission.CAMERA
+                        this,
+                        android.Manifest.permission.CAMERA
                 )
                 -> Log.i("ja", "Zeige Kamera Permission Text")
 
                 else -> requestPermissionLauncher.launch(android.Manifest.permission.CAMERA)
             }
         }
-    }
+
 }
 
 
