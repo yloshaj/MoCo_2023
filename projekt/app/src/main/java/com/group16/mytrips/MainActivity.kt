@@ -79,7 +79,9 @@ class MainActivity : ComponentActivity() {
                                 ),
                                 navController = navController,
                                 onItemClick = {
-                                    navController.navigate(it.route)
+                                    navController.navigate(it.route) {
+                                        popUpTo(NavigationRoute.ProfileScreen.route)
+                                    }
                                 })
                         }
                     ) {

@@ -18,6 +18,7 @@ import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.rounded.Search
 import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
+import androidx.compose.material3.Divider
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
@@ -129,6 +130,7 @@ fun LocationColumn (list: List<Location>) {
                     locationDefaultPicture = painterResource(id = location.locationPicture),
                     locationName = location.locationName, locationDistance = location.distance
                 )
+                Divider(thickness = 1.dp)
             }
         }
     }
@@ -140,7 +142,7 @@ fun LocationCard (locationDefaultPicture: Painter, locationName: String, locatio
         colors = CardDefaults.cardColors(Color.White),
         modifier = Modifier
             .heightIn(0.dp, 80.dp)
-            .padding(0.dp, 1.dp)
+            .padding(0.dp, 0.dp)
             .background(Color.White),
         shape = ShapeDefaults.ExtraSmall,
         elevation = CardDefaults.cardElevation(2.dp)
@@ -176,13 +178,8 @@ fun LocationCard (locationDefaultPicture: Painter, locationName: String, locatio
                     )
 
             }
-            //Box(modifier = Modifier.size(120.dp, 5.dp).background(Color.Gray))
-                Card() {
-                    Icon (
-                        Icons.Rounded.Search,
-                        contentDescription = null
-                            )
-                }
+
+
 
         }
     }
