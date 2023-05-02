@@ -1,13 +1,21 @@
 package com.group16.mytrips
 
+import android.annotation.SuppressLint
 import android.content.pm.PackageManager
 import android.os.Bundle
 import android.util.Log
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
 import androidx.activity.result.contract.ActivityResultContracts
+import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.layout.PaddingValues
+import androidx.compose.foundation.layout.padding
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Menu
+import androidx.compose.material.icons.rounded.Face
+import androidx.compose.material.icons.rounded.Person
+import androidx.compose.material.icons.rounded.Phone
+import androidx.compose.material.icons.rounded.Place
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
@@ -24,6 +32,12 @@ import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.core.app.ActivityCompat
 import androidx.core.content.ContextCompat
+import androidx.navigation.NavController
+import androidx.navigation.compose.rememberNavController
+import com.group16.mytrips.data.BottomNavigationItem
+import com.group16.mytrips.screens.BottomNavigationBar
+import com.group16.mytrips.screens.Navigation
+import com.group16.mytrips.screens.NavigationRoute
 import com.group16.mytrips.screens.PreviewHeader
 
 import com.group16.mytrips.ui.theme.MyTripsTheme
@@ -39,12 +53,42 @@ class MainActivity : ComponentActivity() {
             else Log.i("ja", "Nicht erlaubt")
         }
 
+        @SuppressLint("UnusedMaterial3ScaffoldPaddingParameter")
         @OptIn(ExperimentalMaterial3Api::class)
         override fun onCreate(savedInstanceState: Bundle?) {
             super.onCreate(savedInstanceState)
             setContent {
                 MyTripsTheme {
-
+                    val navController = rememberNavController()
+                    Scaffold(
+                        bottomBar = {
+                            BottomNavigationBar(
+                                items = listOf(
+                                    BottomNavigationItem(
+                                        name = "Navigation",
+                                        route = NavigationRoute.NavigationScreen.route,
+                                        icon = Icons.Rounded.Place),
+                                    BottomNavigationItem(
+                                        name = "Profil",
+                                        route = NavigationRoute.ProfileScreen.route,
+                                        icon = Icons.Rounded.Face),
+                                    BottomNavigationItem(
+                                        name = "Kamera",
+                                        route = NavigationRoute.CameraScreen.route,
+                                        icon = Icons.Rounded.Phone)
+                                ),
+                                navController = navController,
+                                onItemClick = {
+                                    navController.navigate(it.route)
+                                })
+                        }
+                    ) {
+                        innerPadding ->
+                        Box(modifier = Modifier
+                            .padding(PaddingValues(0.dp,0.dp,0.dp,innerPadding.calculateBottomPadding()))) {
+                            Navigation(navController = navController)
+                        }
+                    }
 
                 }
             }

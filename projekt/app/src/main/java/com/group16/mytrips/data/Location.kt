@@ -1,4 +1,4 @@
-package com.group16.mytrips.screens
+package com.group16.mytrips.data
 
 import androidx.compose.ui.graphics.painter.Painter
 
