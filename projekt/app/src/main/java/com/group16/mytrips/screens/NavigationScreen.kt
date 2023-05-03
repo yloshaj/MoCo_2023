@@ -6,6 +6,7 @@ import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.fillMaxHeight
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.heightIn
@@ -60,9 +61,9 @@ fun NavigationScreen(){
         Column() {
             Box(modifier = Modifier
                 .fillMaxWidth()
-                .weight(1f))
+                .weight(0.6f))
 
-            Box(modifier = Modifier.weight(1f)){
+            Box(modifier = Modifier.weight(0.4f)){
                 LocationColumn(list = locationList)
             }
 
@@ -72,7 +73,7 @@ fun NavigationScreen(){
 @Composable
 fun Maps(){
     Box(modifier = Modifier.fillMaxSize()){
-        Image(painter = painterResource(id = R.drawable.ic_map), contentDescription = null )
+        Image(painter = painterResource(id = R.drawable.ic_fullmap), contentDescription = null )
     }
 
 }
@@ -91,12 +92,12 @@ fun SearchBar() {
     ) {
         Row(modifier = Modifier.fillMaxSize(), verticalAlignment = Alignment.CenterVertically) {
             TextField(
-                colors = TextFieldDefaults.textFieldColors(containerColor = Color.White,
-                focusedIndicatorColor = Color.White, unfocusedIndicatorColor = Color.White,
+                colors = TextFieldDefaults.textFieldColors(containerColor = Color.Transparent,
+                focusedIndicatorColor = Color.Transparent, unfocusedIndicatorColor = Color.Transparent
                 ),
                 value = textState.value,
                 onValueChange = { value -> textState.value = value },
-                modifier = Modifier.weight(7f),
+                modifier = Modifier.weight(7f).fillMaxHeight(),
                 singleLine = true,
 
                 trailingIcon = {

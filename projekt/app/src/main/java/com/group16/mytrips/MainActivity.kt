@@ -27,7 +27,9 @@ import androidx.compose.material3.TopAppBarDefaults
 import androidx.compose.material3.surfaceColorAtElevation
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.res.painterResource
+import androidx.compose.ui.res.vectorResource
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.core.app.ActivityCompat
@@ -71,11 +73,11 @@ class MainActivity : ComponentActivity() {
                                     BottomNavigationItem(
                                         name = "Profil",
                                         route = NavigationRoute.ProfileScreen.route,
-                                        icon = Icons.Rounded.Face),
+                                        icon = Icons.Rounded.Person),
                                     BottomNavigationItem(
                                         name = "Kamera",
                                         route = NavigationRoute.CameraScreen.route,
-                                        icon = Icons.Rounded.Phone)
+                                        icon = ImageVector.vectorResource(id = R.drawable.ic_photo_camera))
                                 ),
                                 navController = navController,
                                 onItemClick = {

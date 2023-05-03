@@ -9,6 +9,9 @@ sealed class NavigationRoute {
     object ProfileScreen {val route = "ProfileScreen"}
     object NavigationScreen {val route = "NavigationScreen"}
     object CameraScreen {val route = "CameraScreen"}
+    object DetailedSightScreen {val route = "DetailedSightScreen"}
+    object DetailedProfileScreen {val route = "DetailedProfileScreen"}
+
 
 }
 
@@ -24,6 +27,7 @@ fun Navigation(navController: NavHostController) {
         composable(NavigationRoute.CameraScreen.route) {
             CamScreen()
         }
+
     }
     
 }

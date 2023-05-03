@@ -21,6 +21,7 @@ import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.Icon
 import androidx.compose.material3.ShapeDefaults
+import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
@@ -63,9 +64,10 @@ fun ProfileHeader (profilbild: Painter, name: String, overAllXP: Int) {
         Column(modifier = Modifier.background(Color.White)) {
             Column(
                 horizontalAlignment = Alignment.CenterHorizontally,
+
                 modifier = Modifier.fillMaxWidth()
             ) {
-                Text(text = name, fontSize = 30.sp)
+                Text(text = name, fontSize = 30.sp, modifier = Modifier.padding(0.dp, 8.dp))
                 Row(
                     horizontalArrangement = Arrangement.SpaceEvenly,
                     verticalAlignment = Alignment.CenterVertically,
@@ -81,7 +83,7 @@ fun ProfileHeader (profilbild: Painter, name: String, overAllXP: Int) {
                 }
 
             }
-            Text(text = "Gefundene Locations:", fontSize = 20.sp)
+            Text(text = "Gefundene Locations:", fontSize = 20.sp, modifier = Modifier.padding(0.dp, 8.dp))
         }
     }
 }
@@ -102,19 +104,14 @@ fun LevelBar (overAllXP: Int) {
             Box() {
                 val barMaxLength = 180
                 val barLength = barMaxLength * percentage
-                Box(
-                    modifier = Modifier
-                        .offset(2.dp, 4.dp)
-                        .blur(10.dp)
-                        .alpha(0.5f)
-                        .size(barMaxLength.dp, 20.dp)
-                        .background(Color.LightGray)
-                )
-                Box(
-                    modifier = Modifier
-                        .size(barMaxLength.dp, 20.dp)
-                        .background(Color.LightGray),
-                )
+                Surface(shadowElevation = 10.dp) {
+                    Box(
+                        modifier = Modifier
+                            .size(barMaxLength.dp, 20.dp)
+                            .background(Color.LightGray),
+                    )
+                }
+
                 Box(
                     modifier = Modifier
                         .size(barLength.dp, 20.dp)
