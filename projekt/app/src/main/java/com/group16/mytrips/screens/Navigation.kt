@@ -19,13 +19,18 @@ sealed class NavigationRoute {
 fun Navigation(navController: NavHostController) {
     NavHost(navController = navController, startDestination = NavigationRoute.ProfileScreen.route) {
         composable(NavigationRoute.ProfileScreen.route) {
-            PreviewHeader()
+            PreviewHeader { sightId -> navController.navigate(NavigationRoute.DetailedSightScreen.route+ "/ $sightId") {
+                popUpTo(NavigationRoute.ProfileScreen.route)
+            } }
         }
         composable(NavigationRoute.NavigationScreen.route) {
             NavigationScreen()
         }
         composable(NavigationRoute.CameraScreen.route) {
             CamScreen()
+        }
+        composable(NavigationRoute.DetailedSightScreen.route +"/ {sightId}") {
+            navBackStackEntry ->  SightScreen(navBackStackEntry.arguments?.getString("sightId"))
         }
 
     }

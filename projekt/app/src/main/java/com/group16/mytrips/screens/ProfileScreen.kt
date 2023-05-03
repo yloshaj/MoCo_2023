@@ -1,6 +1,7 @@
 package com.group16.mytrips.screens
 
 import androidx.compose.foundation.background
+import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 
@@ -9,6 +10,7 @@ import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.PaddingValues
 
 import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.heightIn
 import androidx.compose.foundation.layout.offset
@@ -44,14 +46,49 @@ import com.group16.mytrips.R
 import com.group16.mytrips.data.Sight
 import kotlin.math.roundToInt
 
-val sight = Sight(R.drawable.ic_dummylocationpic, sightName = "Location Name", date = "Datum", coordinates = "Koordinaten")
-val listOfSight = listOf(sight, sight, sight, sight, sight, sight, sight,sight, sight)
+val sight0 = Sight(sightId = "sight0", picture = R.drawable.ic_dummylocationpic, sightName = "Location 0", date = "25.04,2023", coordinates = "Koordinaten")
+val sight1 = Sight(sightId = "sight1", picture = R.drawable.ic_dummylocationpic, sightName = "Location 1", date = "20.04.2023", coordinates = "Koordinaten")
+val sight2 = Sight(sightId = "sight2", picture = R.drawable.ic_dummylocationpic, sightName = "Location 2", date = "14.04.2023", coordinates = "Koordinaten")
+val sight3 = Sight(sightId = "sight3", picture = R.drawable.ic_dummylocationpic, sightName = "Location 3", date = "26.02.2023", coordinates = "Koordinaten")
+val sight4 = Sight(sightId = "sight4", picture = R.drawable.ic_dummylocationpic, sightName = "Location 4", date = "25,02,2023", coordinates = "Koordinaten")
+val sight5 = Sight(sightId = "sight5", picture = R.drawable.ic_dummylocationpic, sightName = "Location 5", date = "19.02.1023", coordinates = "Koordinaten")
+val sight6 = Sight(sightId = "sight6", picture = R.drawable.ic_dummylocationpic, sightName = "Location 6", date = "05.01.2023", coordinates = "Koordinaten")
+val sight7 = Sight(sightId = "sight7", picture = R.drawable.ic_dummylocationpic, sightName = "Location 7", date = "19.12.2022", coordinates = "Koordinaten")
+val sight8 = Sight(sightId = "sight8", picture = R.drawable.ic_dummylocationpic, sightName = "Location 8", date = "04.12.2022", coordinates = "Koordinaten")
+
+val listOfSight = listOf(sight0, sight1, sight2, sight3, sight4, sight5, sight6,sight7, sight8)
 
 @Composable
-fun ProfileScreen (profilbild: Painter, name: String, overAllXP: Int, listOfSight: List<Sight>) {
+fun SightScreen (sightId: String?) {
+
+    var currentSight by remember {
+        mutableStateOf(Sight("",0,"","",""))
+    }
+    if (sightId != null) {
+        for (sight in listOfSight) if (sightId == sight.sightId) currentSight = sight
+    }
+    Box (
+        Modifier
+            .fillMaxSize()
+            .background(Color.Black)) {
+        Icon(
+            painter = painterResource(id = currentSight.picture),
+            contentDescription = null,
+            modifier = Modifier.fillMaxSize(),
+            tint = Color.Unspecified
+        )
+        Column(verticalArrangement = Arrangement.Bottom, modifier = Modifier.fillMaxSize()) {
+            Text(text = currentSight.sightName, fontSize = 30.sp, color = Color.White)
+            Text(text = currentSight.date, color = Color.White)
+        }
+    }
+
+}
+@Composable
+fun ProfileScreen (profilbild: Painter, name: String, overAllXP: Int, listOfSight: List<Sight>, onItemClicked: (sightId: String) -> Unit) {
     Column {
         ProfileHeader(profilbild = profilbild , name = name, overAllXP = overAllXP)
-        SightGrid(list = listOfSight)
+        SightGrid(list = listOfSight, onItemClicked)
     }
 }
 @Composable
@@ -126,17 +163,15 @@ fun LevelBar (overAllXP: Int) {
 }
 
 @Composable
-fun SightGrid (list: List<Sight>) {
+fun SightGrid (list: List<Sight>, onItemClicked: (userId: String) -> Unit) {
         LazyVerticalGrid(
             columns = GridCells.Fixed(2),
             contentPadding = PaddingValues(10.dp)
         ) {
             items(list.size) { it ->
                 SightCard(
-                    painter = painterResource(id = list[it].picture),
-                    titel = list[it].sightName,
-                    date = list[it].date,
-                    koordinaten = list[it].coordinates
+                    sight = list[it],
+                    onItemClicked = onItemClicked
                 )
             }
         }
@@ -145,10 +180,11 @@ fun SightGrid (list: List<Sight>) {
 
 
 @Composable
-fun SightCard (painter: Painter, titel: String, date: String, koordinaten: String) {
+fun SightCard (sight: Sight, onItemClicked: (sightId: String) -> Unit) {
     Card(modifier = Modifier
         .widthIn(0.dp, 156.dp)
-        .padding(13.dp, 4.dp),
+        .padding(13.dp, 4.dp)
+        .clickable { onItemClicked(sight.sightId) },
         elevation = CardDefaults.cardElevation(2.dp),
         colors = CardDefaults.cardColors(Color.White),
         shape = ShapeDefaults.ExtraSmall
@@ -157,7 +193,7 @@ fun SightCard (painter: Painter, titel: String, date: String, koordinaten: Strin
 
 
             Icon(
-                painter,
+                painterResource(id = sight.picture),
                 contentDescription = null,
                 tint = Color.Unspecified,
                 modifier = Modifier.padding(0.dp, 7.dp)
@@ -165,7 +201,7 @@ fun SightCard (painter: Painter, titel: String, date: String, koordinaten: Strin
             Row(modifier = Modifier.heightIn(50.dp, 60.dp)) {
 
                 Text(
-                    text = titel,
+                    text = sight.sightName,
                     color = Color.Black,
                     fontSize = 15.sp,
                     fontWeight = FontWeight.Bold,
@@ -174,9 +210,9 @@ fun SightCard (painter: Painter, titel: String, date: String, koordinaten: Strin
                     maxLines = 2,
                 )
             }
-            Text(text = date, fontSize = 14.sp, fontWeight = FontWeight.Bold)
+            Text(text = sight.date, fontSize = 14.sp, fontWeight = FontWeight.Bold)
             Text(
-                text = koordinaten,
+                text = sight.coordinates,
                 fontSize = 13.sp,
                 overflow = TextOverflow.Ellipsis,
                 modifier = Modifier.widthIn(0.dp, 156.dp),
@@ -187,12 +223,12 @@ fun SightCard (painter: Painter, titel: String, date: String, koordinaten: Strin
 }
 
 
-@Preview(showBackground = true)
+//@Preview(showBackground = true)
 @Composable
-fun PreviewHeader() {
+fun PreviewHeader(onItemClicked: (sightId: String) -> Unit) {
     var xp by remember {
         mutableStateOf(670)
     }
     //ProfileHeader(profilbild = painterResource(id = R.drawable.ic_dummyprofilepic), name = "Max Mustermann", overAllXP = xp)
-    ProfileScreen(profilbild = painterResource(id = R.drawable.ic_dummyprofilepic), name = "Max Mustermann", overAllXP =xp, listOfSight)
+    ProfileScreen(profilbild = painterResource(id = R.drawable.ic_dummyprofilepic), name = "Max Mustermann", overAllXP =xp, listOfSight, onItemClicked)
 }

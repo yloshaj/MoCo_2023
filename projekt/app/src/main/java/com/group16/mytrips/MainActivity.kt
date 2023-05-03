@@ -134,6 +134,6 @@ fun Greeting(name: String, modifier: Modifier = Modifier) {
 fun GreetingPreview() {
     MyTripsTheme {
         //SightColumn()
-        PreviewHeader()
+
     }
 }
