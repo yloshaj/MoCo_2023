@@ -1,5 +1,6 @@
 package com.group16.mytrips.screens
 
+import android.graphics.drawable.Icon
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
@@ -12,15 +13,19 @@ import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.heightIn
 import androidx.compose.foundation.layout.offset
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.layout.widthIn
 import androidx.compose.foundation.lazy.grid.GridCells
+import androidx.compose.foundation.lazy.grid.LazyHorizontalGrid
 import androidx.compose.foundation.lazy.grid.LazyVerticalGrid
 import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
+import androidx.compose.material3.Divider
 import androidx.compose.material3.Icon
 import androidx.compose.material3.ShapeDefaults
 import androidx.compose.material3.Surface
@@ -36,7 +41,10 @@ import androidx.compose.ui.draw.alpha
 import androidx.compose.ui.draw.blur
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.painter.Painter
+import androidx.compose.ui.graphics.vector.ImageVector
+import androidx.compose.ui.node.modifierElementOf
 import androidx.compose.ui.res.painterResource
+import androidx.compose.ui.res.vectorResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.tooling.preview.Preview
@@ -57,6 +65,11 @@ val sight7 = Sight(sightId = "sight7", picture = R.drawable.ic_dummylocationpic,
 val sight8 = Sight(sightId = "sight8", picture = R.drawable.ic_dummylocationpic, sightName = "Location 8", date = "04.12.2022", coordinates = "Koordinaten")
 
 val listOfSight = listOf(sight0, sight1, sight2, sight3, sight4, sight5, sight6,sight7, sight8)
+val listOfAvatars = listOf(R.drawable.ic_dummyprofilepic,R.drawable.ic_dummyprofilepic,
+    R.drawable.ic_dummyprofilepic,R.drawable.ic_dummyprofilepic,R.drawable.ic_dummyprofilepic,
+    R.drawable.ic_dummyprofilepic,R.drawable.ic_dummyprofilepic,R.drawable.ic_dummyprofilepic,
+    R.drawable.ic_dummyprofilepic,R.drawable.ic_dummyprofilepic,R.drawable.ic_dummyprofilepic
+)
 
 @Composable
 fun SightScreen (sightId: String?) {
@@ -231,4 +244,41 @@ fun PreviewHeader(onItemClicked: (sightId: String) -> Unit) {
     }
     //ProfileHeader(profilbild = painterResource(id = R.drawable.ic_dummyprofilepic), name = "Max Mustermann", overAllXP = xp)
     ProfileScreen(profilbild = painterResource(id = R.drawable.ic_dummyprofilepic), name = "Max Mustermann", overAllXP =xp, listOfSight, onItemClicked)
+}
+@Preview(showBackground = true)
+@Composable
+fun ActualPreview() {
+    //ProfileHeader(profilbild = painterResource(id = R.drawable.ic_dummyprofilepic), name = "Max Mustermann", overAllXP = 130 )
+    ProfileSelection()
+}
+@Composable
+fun ProfileSelection (){
+    Column(modifier = Modifier
+        .fillMaxWidth()
+        .height(200.dp)) {
+        LazyHorizontalGrid(
+            rows = GridCells.Fixed(1),
+            modifier =  Modifier.weight(1f) , contentPadding = PaddingValues(10.dp),
+            verticalArrangement = Arrangement.spacedBy(10.dp),
+            horizontalArrangement = Arrangement.spacedBy(10.dp)
+
+        ) {
+            items(listOfAvatars.size) { it ->
+                androidx.compose.material3.Icon(painter = painterResource(id = listOfAvatars[it]), contentDescription = null, tint = Color.Unspecified )
+            }
+        }
+        Divider()
+        LazyHorizontalGrid(
+            rows = GridCells.Fixed(1),
+            modifier =  Modifier.weight(1f) , contentPadding = PaddingValues(10.dp),
+            verticalArrangement = Arrangement.spacedBy(10.dp),
+            horizontalArrangement = Arrangement.spacedBy(10.dp)
+
+        ) {
+            items(listOfAvatars.size) { it ->
+                androidx.compose.material3.Icon(painter = painterResource(id = listOfAvatars[it]), contentDescription = null, tint = Color.Unspecified )
+            }
+        }
+    }
+
 }
