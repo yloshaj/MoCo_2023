@@ -1,6 +1,9 @@
 package com.group16.mytrips.screens
 
-import android.graphics.drawable.Icon
+import androidx.compose.animation.AnimatedVisibility
+import androidx.compose.animation.animateContentSize
+import androidx.compose.animation.core.LinearOutSlowInEasing
+import androidx.compose.animation.core.tween
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
@@ -15,14 +18,14 @@ import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.heightIn
-import androidx.compose.foundation.layout.offset
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
-import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.layout.widthIn
 import androidx.compose.foundation.lazy.grid.GridCells
 import androidx.compose.foundation.lazy.grid.LazyHorizontalGrid
 import androidx.compose.foundation.lazy.grid.LazyVerticalGrid
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.rounded.ArrowDropDown
 import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.Divider
@@ -37,14 +40,10 @@ import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.draw.alpha
-import androidx.compose.ui.draw.blur
+import androidx.compose.ui.draw.rotate
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.painter.Painter
-import androidx.compose.ui.graphics.vector.ImageVector
-import androidx.compose.ui.node.modifierElementOf
 import androidx.compose.ui.res.painterResource
-import androidx.compose.ui.res.vectorResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.tooling.preview.Preview
@@ -106,6 +105,9 @@ fun ProfileScreen (profilbild: Painter, name: String, overAllXP: Int, listOfSigh
 }
 @Composable
 fun ProfileHeader (profilbild: Painter, name: String, overAllXP: Int) {
+    var expanded  by remember {
+        mutableStateOf(false)
+    }
     Card(
         elevation = CardDefaults.cardElevation(10.dp),
         colors = CardDefaults.cardColors(Color.White),
@@ -127,10 +129,19 @@ fun ProfileHeader (profilbild: Painter, name: String, overAllXP: Int) {
                         profilbild,
                         contentDescription = null,
                         tint = Color.Unspecified,
-                        modifier = Modifier.padding(0.dp)
+                        modifier = Modifier
+                            .padding(0.dp)
+                            .clickable { expanded = !expanded }
                     )
                     LevelBar(overAllXP = overAllXP)
                 }
+                AnimatedVisibility(visible = expanded) {
+                    ProfileSelection1()
+                }
+                //if (extension) ProfileSelection1()
+
+
+
 
             }
             Text(text = "Gefundene Locations:", fontSize = 20.sp, modifier = Modifier.padding(0.dp, 8.dp))
@@ -249,7 +260,7 @@ fun PreviewHeader(onItemClicked: (sightId: String) -> Unit) {
 @Composable
 fun ActualPreview() {
     //ProfileHeader(profilbild = painterResource(id = R.drawable.ic_dummyprofilepic), name = "Max Mustermann", overAllXP = 130 )
-    ProfileSelection()
+    ProfileSelection1()
 }
 @Composable
 fun ProfileSelection (){
@@ -270,7 +281,7 @@ fun ProfileSelection (){
         Divider()
         LazyHorizontalGrid(
             rows = GridCells.Fixed(1),
-            modifier =  Modifier.weight(1f) , contentPadding = PaddingValues(10.dp),
+            modifier =  Modifier , contentPadding = PaddingValues(10.dp),
             verticalArrangement = Arrangement.spacedBy(10.dp),
             horizontalArrangement = Arrangement.spacedBy(10.dp)
 
@@ -281,4 +292,53 @@ fun ProfileSelection (){
         }
     }
 
+}
+
+
+@Composable
+fun ProfileSelection1 (){
+
+    Column(modifier = Modifier
+        .fillMaxWidth()
+        .height(200.dp)
+         ) {
+        val gridModifier = Modifier
+            .weight(1f)
+            .padding(0.dp, 1.dp)
+        TierGrid(modifier = gridModifier)
+        TierGrid(modifier = gridModifier)
+
+    }
+
+}
+
+@Composable
+fun TierGrid (modifier: Modifier){
+
+    Card(modifier = modifier, elevation = CardDefaults.cardElevation(10.dp),
+        colors = CardDefaults.cardColors(containerColor = Color.White), shape = ShapeDefaults.ExtraSmall) {
+        Row(verticalAlignment = Alignment.CenterVertically) {
+            Icon(imageVector = Icons.Rounded.ArrowDropDown, contentDescription = null, modifier = Modifier
+                .weight(0.1f)
+                .rotate(90f))
+            LazyHorizontalGrid(
+                modifier = Modifier.weight(1f),
+                rows = GridCells.Fixed(1), contentPadding = PaddingValues(10.dp),
+                verticalArrangement = Arrangement.spacedBy(10.dp),
+                horizontalArrangement = Arrangement.spacedBy(10.dp)
+
+            ) {
+                items(listOfAvatars.size) { it ->
+                    Icon(
+                        painter = painterResource(id = listOfAvatars[it]),
+                        contentDescription = null, tint = Color.Unspecified
+                    )
+                }
+            }
+            Icon(imageVector = Icons.Rounded.ArrowDropDown, contentDescription = null, modifier = Modifier
+                .weight(0.1f)
+                .rotate(-90f)
+            )
+        }
+    }
 }
