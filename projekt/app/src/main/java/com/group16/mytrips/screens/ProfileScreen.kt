@@ -1,9 +1,7 @@
 package com.group16.mytrips.screens
 
 import androidx.compose.animation.AnimatedVisibility
-import androidx.compose.animation.animateContentSize
-import androidx.compose.animation.core.LinearOutSlowInEasing
-import androidx.compose.animation.core.tween
+import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
@@ -24,11 +22,11 @@ import androidx.compose.foundation.layout.widthIn
 import androidx.compose.foundation.lazy.grid.GridCells
 import androidx.compose.foundation.lazy.grid.LazyHorizontalGrid
 import androidx.compose.foundation.lazy.grid.LazyVerticalGrid
+import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.rounded.ArrowDropDown
 import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
-import androidx.compose.material3.Divider
 import androidx.compose.material3.Icon
 import androidx.compose.material3.ShapeDefaults
 import androidx.compose.material3.Surface
@@ -43,7 +41,10 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.rotate
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.painter.Painter
+import androidx.compose.ui.graphics.vector.ImageVector
+import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.res.painterResource
+import androidx.compose.ui.res.vectorResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.tooling.preview.Preview
@@ -67,7 +68,7 @@ val listOfSight = listOf(sight0, sight1, sight2, sight3, sight4, sight5, sight6,
 val listOfAvatars = listOf(R.drawable.ic_dummyprofilepic,R.drawable.ic_dummyprofilepic,
     R.drawable.ic_dummyprofilepic,R.drawable.ic_dummyprofilepic,R.drawable.ic_dummyprofilepic,
     R.drawable.ic_dummyprofilepic,R.drawable.ic_dummyprofilepic,R.drawable.ic_dummyprofilepic,
-    R.drawable.ic_dummyprofilepic,R.drawable.ic_dummyprofilepic,R.drawable.ic_dummyprofilepic
+    R.drawable.ic_dummyprofilepic,R.drawable.ic_dummyprofilepic,R.drawable.ic_dummyprofilepic, R.drawable.ic_dummylocationpic
 )
 
 @Composable
@@ -104,9 +105,30 @@ fun ProfileScreen (profilbild: Painter, name: String, overAllXP: Int, listOfSigh
     }
 }
 @Composable
+fun ProfilePic(modifier: Modifier, id: Int) {
+    Surface(shape = CircleShape, shadowElevation = 10.dp) {
+        val image = ImageVector.vectorResource(id = id)
+
+        Image(imageVector = image,
+            contentDescription = null,
+            contentScale = ContentScale.Crop,
+            modifier = modifier.size(90.dp),
+
+
+        )
+    }
+
+}
+@Composable
 fun ProfileHeader (profilbild: Painter, name: String, overAllXP: Int) {
     var expanded  by remember {
         mutableStateOf(false)
+    }
+    var profilePic by remember {
+        mutableStateOf(profilbild)
+    }
+    var profileId by remember {
+        mutableStateOf(R.drawable.ic_dummyprofilepic)
     }
     Card(
         elevation = CardDefaults.cardElevation(10.dp),
@@ -125,26 +147,18 @@ fun ProfileHeader (profilbild: Painter, name: String, overAllXP: Int) {
                     verticalAlignment = Alignment.CenterVertically,
                     modifier = Modifier.fillMaxWidth()
                 ) {
-                    Icon(
-                        profilbild,
-                        contentDescription = null,
-                        tint = Color.Unspecified,
-                        modifier = Modifier
-                            .padding(0.dp)
-                            .clickable { expanded = !expanded }
-                    )
+                    ProfilePic(modifier = Modifier
+                        .padding(0.dp)
+                        .clickable { expanded = !expanded }, id = profileId)
+
                     LevelBar(overAllXP = overAllXP)
                 }
                 AnimatedVisibility(visible = expanded) {
-                    ProfileSelection1()
+                    ProfileSelection1({ value -> profileId = value })
                 }
-                //if (extension) ProfileSelection1()
-
-
-
 
             }
-            Text(text = "Gefundene Locations:", fontSize = 20.sp, modifier = Modifier.padding(0.dp, 8.dp))
+            Text(text = "Gefundene Locations:", fontSize = 20.sp, modifier = Modifier.padding(10.dp, 8.dp))
         }
     }
 }
@@ -260,63 +274,32 @@ fun PreviewHeader(onItemClicked: (sightId: String) -> Unit) {
 @Composable
 fun ActualPreview() {
     //ProfileHeader(profilbild = painterResource(id = R.drawable.ic_dummyprofilepic), name = "Max Mustermann", overAllXP = 130 )
-    ProfileSelection1()
-}
-@Composable
-fun ProfileSelection (){
-    Column(modifier = Modifier
-        .fillMaxWidth()
-        .height(200.dp)) {
-        LazyHorizontalGrid(
-            rows = GridCells.Fixed(1),
-            modifier =  Modifier.weight(1f) , contentPadding = PaddingValues(10.dp),
-            verticalArrangement = Arrangement.spacedBy(10.dp),
-            horizontalArrangement = Arrangement.spacedBy(10.dp)
-
-        ) {
-            items(listOfAvatars.size) { it ->
-                androidx.compose.material3.Icon(painter = painterResource(id = listOfAvatars[it]), contentDescription = null, tint = Color.Unspecified )
-            }
-        }
-        Divider()
-        LazyHorizontalGrid(
-            rows = GridCells.Fixed(1),
-            modifier =  Modifier , contentPadding = PaddingValues(10.dp),
-            verticalArrangement = Arrangement.spacedBy(10.dp),
-            horizontalArrangement = Arrangement.spacedBy(10.dp)
-
-        ) {
-            items(listOfAvatars.size) { it ->
-                androidx.compose.material3.Icon(painter = painterResource(id = listOfAvatars[it]), contentDescription = null, tint = Color.Unspecified )
-            }
-        }
-    }
-
+    //ProfileSelection1()
 }
 
 
 @Composable
-fun ProfileSelection1 (){
+fun ProfileSelection1 (onClick: (id: Int) -> Unit){
 
     Column(modifier = Modifier
         .fillMaxWidth()
-        .height(200.dp)
+        .height(140.dp)
          ) {
         val gridModifier = Modifier
             .weight(1f)
-            .padding(0.dp, 1.dp)
-        TierGrid(modifier = gridModifier)
-        TierGrid(modifier = gridModifier)
+            .padding(0.dp, 10.dp)
+        TierGrid(modifier = gridModifier, onClick)
 
     }
 
 }
 
 @Composable
-fun TierGrid (modifier: Modifier){
+fun TierGrid (modifier: Modifier, onClick: (id: Int) -> Unit){
 
     Card(modifier = modifier, elevation = CardDefaults.cardElevation(10.dp),
         colors = CardDefaults.cardColors(containerColor = Color.White), shape = ShapeDefaults.ExtraSmall) {
+        //Icon(imageVector = Icons.Rounded.Close, contentDescription = null, Modifier.alpha(0.6f).padding(4.dp))
         Row(verticalAlignment = Alignment.CenterVertically) {
             Icon(imageVector = Icons.Rounded.ArrowDropDown, contentDescription = null, modifier = Modifier
                 .weight(0.1f)
@@ -329,9 +312,11 @@ fun TierGrid (modifier: Modifier){
 
             ) {
                 items(listOfAvatars.size) { it ->
+                    val avatarId = listOfAvatars[it]
                     Icon(
-                        painter = painterResource(id = listOfAvatars[it]),
-                        contentDescription = null, tint = Color.Unspecified
+                        painter = painterResource(avatarId),
+                        contentDescription = null, tint = Color.Unspecified,
+                        modifier = Modifier.clickable { onClick(avatarId) }
                     )
                 }
             }
