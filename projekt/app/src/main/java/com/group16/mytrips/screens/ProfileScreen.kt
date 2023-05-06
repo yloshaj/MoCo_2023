@@ -12,6 +12,7 @@ import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.PaddingValues
 
 import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.fillMaxHeight
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
@@ -39,7 +40,9 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.rotate
+import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.graphics.RectangleShape
 import androidx.compose.ui.graphics.painter.Painter
 import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.layout.ContentScale
@@ -75,7 +78,7 @@ val listOfAvatars = listOf(R.drawable.ic_dummyprofilepic,R.drawable.ic_dummyprof
 fun SightScreen (sightId: String?) {
 
     var currentSight by remember {
-        mutableStateOf(Sight("",0,"","",""))
+        mutableStateOf(Sight("Sight Not Found!",0,"","",""))
     }
     if (sightId != null) {
         for (sight in listOfSight) if (sightId == sight.sightId) currentSight = sight
@@ -154,7 +157,10 @@ fun ProfileHeader (profilbild: Painter, name: String, overAllXP: Int) {
                     LevelBar(overAllXP = overAllXP)
                 }
                 AnimatedVisibility(visible = expanded) {
-                    ProfileSelection1({ value -> profileId = value })
+                    ProfileSelection1 { value ->
+                        profileId = value
+                        expanded = !expanded
+                    }
                 }
 
             }
@@ -275,6 +281,7 @@ fun PreviewHeader(onItemClicked: (sightId: String) -> Unit) {
 fun ActualPreview() {
     //ProfileHeader(profilbild = painterResource(id = R.drawable.ic_dummyprofilepic), name = "Max Mustermann", overAllXP = 130 )
     //ProfileSelection1()
+    SlideCard(onClick = {})
 }
 
 
@@ -283,7 +290,7 @@ fun ProfileSelection1 (onClick: (id: Int) -> Unit){
 
     Column(modifier = Modifier
         .fillMaxWidth()
-        .height(140.dp)
+        .height(120.dp)
          ) {
         val gridModifier = Modifier
             .weight(1f)
@@ -297,9 +304,10 @@ fun ProfileSelection1 (onClick: (id: Int) -> Unit){
 @Composable
 fun TierGrid (modifier: Modifier, onClick: (id: Int) -> Unit){
 
-    Card(modifier = modifier, elevation = CardDefaults.cardElevation(10.dp),
-        colors = CardDefaults.cardColors(containerColor = Color.White), shape = ShapeDefaults.ExtraSmall) {
+    Card(modifier = modifier, elevation = CardDefaults.cardElevation(5.dp),
+        colors = CardDefaults.cardColors(containerColor = Color.White), shape = RectangleShape) {
         //Icon(imageVector = Icons.Rounded.Close, contentDescription = null, Modifier.alpha(0.6f).padding(4.dp))
+
         Row(verticalAlignment = Alignment.CenterVertically) {
             Icon(imageVector = Icons.Rounded.ArrowDropDown, contentDescription = null, modifier = Modifier
                 .weight(0.1f)
@@ -316,7 +324,9 @@ fun TierGrid (modifier: Modifier, onClick: (id: Int) -> Unit){
                     Icon(
                         painter = painterResource(avatarId),
                         contentDescription = null, tint = Color.Unspecified,
-                        modifier = Modifier.clickable { onClick(avatarId) }
+                        modifier = Modifier.clickable {
+                            onClick(avatarId)
+                        }
                     )
                 }
             }
@@ -325,5 +335,48 @@ fun TierGrid (modifier: Modifier, onClick: (id: Int) -> Unit){
                 .rotate(-90f)
             )
         }
+        //SlideCard(onClick = onClick)
     }
+}
+
+@Composable
+fun SlideCard (onClick: (id: Int) -> Unit) {
+    Box(modifier = Modifier.height(110.dp), contentAlignment = Alignment.Center) {
+        LazyHorizontalGrid(
+            modifier = Modifier,
+            rows = GridCells.Fixed(1), contentPadding = PaddingValues(25.dp,10.dp),
+            verticalArrangement = Arrangement.spacedBy(10.dp),
+            horizontalArrangement = Arrangement.spacedBy(10.dp)
+
+        ) {
+            items(listOfAvatars.size) { it ->
+                val avatarId = listOfAvatars[it]
+                Icon(
+                    painter = painterResource(avatarId),
+                    contentDescription = null, tint = Color.Unspecified,
+                    modifier = Modifier.clickable {
+                        onClick(avatarId)
+                    }
+                )
+            }
+        }
+        Row(verticalAlignment = Alignment.CenterVertically,
+            horizontalArrangement = Arrangement.SpaceBetween,
+            modifier = Modifier.fillMaxSize()) {
+            val brush1 = Brush.horizontalGradient(listOf(Color.Gray, Color(0f,0f,0f,0f)))
+            val brush2 = Brush.horizontalGradient(listOf(Color(0f,0f,0f,0f), Color.Gray))
+            Icon(imageVector = Icons.Rounded.ArrowDropDown, contentDescription = null, tint = Color(1f,1f,1f,0.7f),
+                modifier = Modifier
+                .fillMaxHeight()
+                .background(brush1)
+                .rotate(90f)
+            )
+            Icon(imageVector = Icons.Rounded.ArrowDropDown, contentDescription = null, tint = Color(1f,1f,1f,0.7f) ,
+                modifier = Modifier
+                .fillMaxHeight()
+                .background(brush2)
+                .rotate(-90f))
+        }
+    }
+
 }
