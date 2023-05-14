@@ -56,7 +56,14 @@ fun NavigationScreen(){
 
     Box {
 
-        Maps()
+        //Maps()
+        Column() {
+            MapsSDK(modifier = Modifier.fillMaxWidth(). weight(0.6f))
+            Box(modifier = Modifier.weight(0.4f)) {
+
+            }
+        }
+
         SearchBar()
         Column() {
             Box(modifier = Modifier
@@ -97,7 +104,9 @@ fun SearchBar() {
                 ),
                 value = textState.value,
                 onValueChange = { value -> textState.value = value },
-                modifier = Modifier.weight(7f).fillMaxHeight(),
+                modifier = Modifier
+                    .weight(7f)
+                    .fillMaxHeight(),
                 singleLine = true,
 
                 trailingIcon = {
