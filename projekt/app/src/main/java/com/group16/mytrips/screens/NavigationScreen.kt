@@ -2,6 +2,7 @@ package com.group16.mytrips.screens
 
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
+import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
@@ -13,6 +14,7 @@ import androidx.compose.foundation.layout.heightIn
 import androidx.compose.foundation.layout.offset
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.layout.widthIn
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
 import androidx.compose.material.icons.Icons
@@ -28,11 +30,12 @@ import androidx.compose.material3.Text
 import androidx.compose.material3.TextField
 import androidx.compose.material3.TextFieldDefaults
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.State
+import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
-import androidx.compose.ui.graphics.painter.Painter
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
@@ -44,21 +47,34 @@ import androidx.compose.ui.draw.alpha
 import androidx.compose.ui.draw.scale
 import androidx.compose.ui.platform.LocalFocusManager
 import androidx.compose.ui.text.input.TextFieldValue
+import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.sp
-import com.group16.mytrips.data.Location
+import com.google.android.gms.maps.model.CameraPosition
+import com.google.android.gms.maps.model.LatLng
+import com.google.maps.android.compose.CameraPositionState
+import com.google.maps.android.compose.rememberCameraPositionState
+import com.group16.mytrips.data.DefaultSight
+import com.group16.mytrips.viewModel.MapViewModel
+import com.group16.mytrips.viewModel.NavigationViewModel
 import kotlin.math.roundToInt
 
-val location = Location(R.drawable.ic_dummylocationpic, "Location Name", 2300)
-val locationList = listOf(location, location, location, location, location, location)
+
 
 @Composable
-fun NavigationScreen(){
+fun NavigationScreen(navViewModel: NavigationViewModel, mapViewModel: MapViewModel){
+    var cameraPosition = rememberCameraPositionState{
+        position = CameraPosition.fromLatLngZoom(LatLng(51.0230345, 7.5654156), 14f)
+    }
+    val onClickMoveCameraPosition = navViewModel::moveCameraPosition
 
+    var sightList = navViewModel.sightList.collectAsState()
     Box {
 
         //Maps()
         Column() {
-            MapsSDK(modifier = Modifier.fillMaxWidth(). weight(0.6f))
+            MapsSDK(modifier = Modifier
+                .fillMaxWidth()
+                .weight(0.6f),  sightList, cameraPosition, navViewModel::addDefaultSight, mapViewModel)
             Box(modifier = Modifier.weight(0.4f)) {
 
             }
@@ -71,7 +87,7 @@ fun NavigationScreen(){
                 .weight(0.6f))
 
             Box(modifier = Modifier.weight(0.4f)){
-                LocationColumn(list = locationList)
+                LocationColumn(navViewModel, sightList, cameraPosition)
             }
 
         }
@@ -130,15 +146,19 @@ fun SearchBar() {
 }
 
 @Composable
-fun LocationColumn (list: List<Location>) {
+fun LocationColumn (navViewModel: NavigationViewModel, sightList: State<MutableList<DefaultSight>>,
+                    cameraPosition: CameraPositionState) {
+    val moveCamera = navViewModel::moveCameraPosition
     Card(elevation = CardDefaults.cardElevation(10.dp)) {
 
 
         LazyColumn() {
-            items(list) { location ->
+            items(sightList.value) { location ->
+
+
                 LocationCard(
-                    locationDefaultPicture = painterResource(id = location.locationPicture),
-                    locationName = location.locationName, locationDistance = location.distance
+                    locationDistance = 2300, location, cameraPosition, moveCamera
+
                 )
                 Divider(thickness = 1.dp)
             }
@@ -147,13 +167,18 @@ fun LocationColumn (list: List<Location>) {
 }
 
 @Composable
-fun LocationCard (locationDefaultPicture: Painter, locationName: String, locationDistance: Int) {
+fun LocationCard (locationDistance: Int, sight: DefaultSight, cameraPosition: CameraPositionState, moveCamera: (CameraPositionState, LatLng)-> Unit) {
     Card(
         colors = CardDefaults.cardColors(Color.White),
         modifier = Modifier
             .heightIn(0.dp, 80.dp)
             .padding(0.dp, 0.dp)
-            .background(Color.White),
+            .background(Color.White)
+            .clickable {
+                val latLng = LatLng(sight.latitude, sight.longitude)
+                moveCamera(cameraPosition, latLng)
+
+            },
         shape = ShapeDefaults.ExtraSmall,
         elevation = CardDefaults.cardElevation(2.dp)
     ) {
@@ -168,18 +193,18 @@ fun LocationCard (locationDefaultPicture: Painter, locationName: String, locatio
                     contentDescription = "Blue Location Point",
                     tint = Color.Unspecified
                 )
-                Column(modifier = Modifier.heightIn(0.dp, 50.dp)) {
+                Column(modifier = Modifier.heightIn(0.dp, 50.dp).widthIn(156.dp, 156.dp)) {
                     var adjustedDistance = ""
                     if (locationDistance >= 1000) adjustedDistance =
                         ((locationDistance / 100f).roundToInt() / 10f).toString() + " km"
                     else adjustedDistance = "$locationDistance m"
-                    Text(text = locationName,
-                        fontSize = 18.sp
+                    Text(text = sight.sightName,
+                        fontSize = 18.sp, overflow = TextOverflow.Ellipsis, maxLines = 1
                         )
                     Text(text = adjustedDistance)
                 }
                 Icon(
-                    painter = locationDefaultPicture,
+                    painter = painterResource(id = sight.defualtPicture),
                     contentDescription = "Default Picture of Sight",
                     tint = Color.Unspecified,
                     modifier = Modifier
@@ -208,6 +233,6 @@ fun PreviewNavScreen() {
     //LocationColumn(list = locationList)
     //LocationCard(locationDefaultPicture = painterResource(id = R.drawable.ic_dummylocationpic),
     //locationName ="Location Name" , locationDistance = locationDistance )
-    NavigationScreen()
+    //NavigationScreen()
     //SearchBar()
 }

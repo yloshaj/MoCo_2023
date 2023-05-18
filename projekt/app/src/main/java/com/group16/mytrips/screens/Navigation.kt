@@ -4,6 +4,8 @@ import androidx.compose.runtime.Composable
 import androidx.navigation.NavHostController
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
+import com.group16.mytrips.viewModel.MapViewModel
+import com.group16.mytrips.viewModel.NavigationViewModel
 
 sealed class NavigationRoute {
     object ProfileScreen {val route = "ProfileScreen"}
@@ -16,7 +18,7 @@ sealed class NavigationRoute {
 }
 
 @Composable
-fun Navigation(navController: NavHostController) {
+fun Navigation(navController: NavHostController, navViewModel: NavigationViewModel, mapViewModel: MapViewModel) {
     NavHost(navController = navController, startDestination = NavigationRoute.ProfileScreen.route) {
         composable(NavigationRoute.ProfileScreen.route) {
             PreviewHeader { sightId -> navController.navigate(NavigationRoute.DetailedSightScreen.route+ "/ $sightId") {
@@ -24,7 +26,7 @@ fun Navigation(navController: NavHostController) {
             } }
         }
         composable(NavigationRoute.NavigationScreen.route) {
-            NavigationScreen()
+            NavigationScreen(navViewModel, mapViewModel)
         }
         composable(NavigationRoute.CameraScreen.route) {
             CamScreen()
