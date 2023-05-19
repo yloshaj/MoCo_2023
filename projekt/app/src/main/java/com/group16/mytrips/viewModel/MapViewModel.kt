@@ -24,6 +24,8 @@ class MapViewModel (context: Context): ViewModel() {
         LocationServices.getFusedLocationProviderClient(context)
 
     val currentLocation: MutableLiveData<LatLng> = MutableLiveData()
+
+
     val locationSource: LocationSource = object : LocationSource {
         override fun activate(listener: LocationSource.OnLocationChangedListener) {
             // Implement the logic to activate the location updates

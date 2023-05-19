@@ -1,5 +1,8 @@
 package com.group16.mytrips.screens
 
+import android.Manifest
+import androidx.activity.compose.ManagedActivityResultLauncher
+import androidx.compose.animation.AnimatedVisibility
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
@@ -22,6 +25,7 @@ import androidx.compose.material.icons.rounded.Search
 import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.Divider
+import androidx.compose.material3.DropdownMenu
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
@@ -45,10 +49,12 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.draw.alpha
 import androidx.compose.ui.draw.scale
+import androidx.compose.ui.modifier.modifierLocalConsumer
 import androidx.compose.ui.platform.LocalFocusManager
 import androidx.compose.ui.text.input.TextFieldValue
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.sp
+import androidx.lifecycle.viewmodel.compose.viewModel
 import com.google.android.gms.maps.model.CameraPosition
 import com.google.android.gms.maps.model.LatLng
 import com.google.maps.android.compose.CameraPositionState
@@ -59,95 +65,130 @@ import com.group16.mytrips.viewModel.NavigationViewModel
 import kotlin.math.roundToInt
 
 
-
 @Composable
-fun NavigationScreen(navViewModel: NavigationViewModel, mapViewModel: MapViewModel){
-    var cameraPosition = rememberCameraPositionState{
+fun NavigationScreen(navViewModel: NavigationViewModel) {
+    var cameraPosition = rememberCameraPositionState {
         position = CameraPosition.fromLatLngZoom(LatLng(51.0230345, 7.5654156), 14f)
     }
-    val onClickMoveCameraPosition = navViewModel::moveCameraPosition
-
     var sightList = navViewModel.sightList.collectAsState()
+    PermissionAlert(
+        permissionTitle = "Location",
+        rationale = "Location needed for Navigation",
+        permission = Manifest.permission.ACCESS_FINE_LOCATION
+    )
     Box {
 
         //Maps()
         Column() {
-            MapsSDK(modifier = Modifier
-                .fillMaxWidth()
-                .weight(0.6f),  sightList, cameraPosition, navViewModel::addDefaultSight, mapViewModel)
+            MapsSDK(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .weight(0.6f), sightList, cameraPosition, navViewModel
+            )
             Box(modifier = Modifier.weight(0.4f)) {
 
             }
         }
 
-        SearchBar()
+        SearchBar(navViewModel)
         Column() {
-            Box(modifier = Modifier
-                .fillMaxWidth()
-                .weight(0.6f))
+            Box(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .weight(0.6f)
+            )
 
-            Box(modifier = Modifier.weight(0.4f)){
+            Box(modifier = Modifier.weight(0.4f)) {
                 LocationColumn(navViewModel, sightList, cameraPosition)
             }
 
         }
     }
 }
+
 @Composable
-fun Maps(){
-    Box(modifier = Modifier.fillMaxSize()){
-        Image(painter = painterResource(id = R.drawable.ic_fullmap), contentDescription = null )
+fun Maps() {
+    Box(modifier = Modifier.fillMaxSize()) {
+        Image(painter = painterResource(id = R.drawable.ic_fullmap), contentDescription = null)
     }
 
 }
+
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
-fun SearchBar() {
-    val textState = remember {
-        mutableStateOf(TextFieldValue(""))
-    }
-    Card(modifier = Modifier
-        .fillMaxWidth()
-        .padding(8.dp, 17.dp)
-        .size(0.dp, 50.dp), shape = ShapeDefaults.Large,
-        colors = CardDefaults.cardColors(Color.White),
-        elevation = CardDefaults.cardElevation(10.dp)
-    ) {
-        Row(modifier = Modifier.fillMaxSize(), verticalAlignment = Alignment.CenterVertically) {
-            TextField(
-                colors = TextFieldDefaults.textFieldColors(containerColor = Color.Transparent,
-                focusedIndicatorColor = Color.Transparent, unfocusedIndicatorColor = Color.Transparent
-                ),
-                value = textState.value,
-                onValueChange = { value -> textState.value = value },
-                modifier = Modifier
-                    .weight(7f)
-                    .fillMaxHeight(),
-                singleLine = true,
+fun SearchBar(navViewModel: NavigationViewModel) {
+    val isSearching by navViewModel.isSearching.collectAsState()
+    val searchText by navViewModel.searchtext.collectAsState()
+    val sightListForQuery by navViewModel.sightListForQuery.collectAsState()
 
-                trailingIcon = {
-                    val focusManager = LocalFocusManager.current
+    val focusManager = LocalFocusManager.current
+    Column() {
+        Card(
+            modifier = Modifier
+                .fillMaxWidth()
+                .padding(8.dp, 17.dp)
+                .size(0.dp, 50.dp), shape = ShapeDefaults.Large,
+            colors = CardDefaults.cardColors(Color.White),
+            elevation = CardDefaults.cardElevation(10.dp)
+        ) {
+            Row(modifier = Modifier.fillMaxSize(), verticalAlignment = Alignment.CenterVertically) {
+                TextField(
+                    colors = TextFieldDefaults.textFieldColors(
+                        containerColor = Color.Transparent,
+                        focusedIndicatorColor = Color.Transparent,
+                        unfocusedIndicatorColor = Color.Transparent
+                    ),
+                    value = searchText,
+                    onValueChange = {
+                        navViewModel.onSearchTextChange(it)
+                        navViewModel.setIsSearching(true)
+                    },
+                    modifier = Modifier
+                        .weight(7f)
+                        .fillMaxHeight(),
+                    singleLine = true,
 
-                    IconButton(onClick = {
-                        focusManager.clearFocus()
-                        textState.value = TextFieldValue("")
+                    trailingIcon = {
 
-                    }) {
-                        Icon(Icons.Rounded.Search, modifier = Modifier
-                            .weight(1f)
-                            .scale(1.2f)
-                            .alpha(0.6f),
-                            contentDescription = null)
 
+                        IconButton(onClick = {
+                            focusManager.clearFocus()
+                            navViewModel.onSearchTextChange("")
+                            navViewModel.setIsSearching(false)
+
+                        }) {
+                            Icon(
+                                Icons.Rounded.Search, modifier = Modifier
+                                    .weight(1f)
+                                    .scale(1.2f)
+                                    .alpha(0.6f),
+                                contentDescription = null
+                            )
+
+                        }
+                    })
+
+
+            }
+        }
+        AnimatedVisibility(visible = isSearching && sightListForQuery.isNotEmpty()) {
+            Card(modifier = Modifier.fillMaxWidth()) {
+                LazyColumn() {
+                    items(sightListForQuery.size) {
+                        Text(text = sightListForQuery[it].sightName)
                     }
-                })
+                }
+            }
+
         }
     }
 }
 
 @Composable
-fun LocationColumn (navViewModel: NavigationViewModel, sightList: State<MutableList<DefaultSight>>,
-                    cameraPosition: CameraPositionState) {
+fun LocationColumn(
+    navViewModel: NavigationViewModel, sightList: State<MutableList<DefaultSight>>,
+    cameraPosition: CameraPositionState
+) {
     val moveCamera = navViewModel::moveCameraPosition
     Card(elevation = CardDefaults.cardElevation(10.dp)) {
 
@@ -167,7 +208,12 @@ fun LocationColumn (navViewModel: NavigationViewModel, sightList: State<MutableL
 }
 
 @Composable
-fun LocationCard (locationDistance: Int, sight: DefaultSight, cameraPosition: CameraPositionState, moveCamera: (CameraPositionState, LatLng)-> Unit) {
+fun LocationCard(
+    locationDistance: Int,
+    sight: DefaultSight,
+    cameraPosition: CameraPositionState,
+    moveCamera: (CameraPositionState, LatLng) -> Unit
+) {
     Card(
         colors = CardDefaults.cardColors(Color.White),
         modifier = Modifier
@@ -187,20 +233,25 @@ fun LocationCard (locationDistance: Int, sight: DefaultSight, cameraPosition: Ca
                 verticalAlignment = Alignment.CenterVertically,
                 horizontalArrangement = Arrangement.SpaceEvenly,
                 modifier = Modifier.fillMaxWidth()
-                ) {
+            ) {
                 Icon(
                     painter = painterResource(id = R.drawable.ic_locpoint),
                     contentDescription = "Blue Location Point",
                     tint = Color.Unspecified
                 )
-                Column(modifier = Modifier.heightIn(0.dp, 50.dp).widthIn(156.dp, 156.dp)) {
+                Column(
+                    modifier = Modifier
+                        .heightIn(0.dp, 50.dp)
+                        .widthIn(156.dp, 156.dp)
+                ) {
                     var adjustedDistance = ""
                     if (locationDistance >= 1000) adjustedDistance =
                         ((locationDistance / 100f).roundToInt() / 10f).toString() + " km"
                     else adjustedDistance = "$locationDistance m"
-                    Text(text = sight.sightName,
+                    Text(
+                        text = sight.sightName,
                         fontSize = 18.sp, overflow = TextOverflow.Ellipsis, maxLines = 1
-                        )
+                    )
                     Text(text = adjustedDistance)
                 }
                 Icon(
@@ -210,17 +261,14 @@ fun LocationCard (locationDistance: Int, sight: DefaultSight, cameraPosition: Ca
                     modifier = Modifier
                         .scale(0.65f)
                         .offset(32.dp, 0.dp)
-                    )
+                )
 
             }
-
 
 
         }
     }
 }
-
-
 
 
 @Preview

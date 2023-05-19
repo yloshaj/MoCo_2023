@@ -1,5 +1,6 @@
 package com.group16.mytrips.screens
 
+import androidx.activity.compose.ManagedActivityResultLauncher
 import androidx.compose.runtime.Composable
 import androidx.navigation.NavHostController
 import androidx.navigation.compose.NavHost
@@ -18,7 +19,7 @@ sealed class NavigationRoute {
 }
 
 @Composable
-fun Navigation(navController: NavHostController, navViewModel: NavigationViewModel, mapViewModel: MapViewModel) {
+fun Navigation(navController: NavHostController, navViewModel: NavigationViewModel) {
     NavHost(navController = navController, startDestination = NavigationRoute.ProfileScreen.route) {
         composable(NavigationRoute.ProfileScreen.route) {
             PreviewHeader { sightId -> navController.navigate(NavigationRoute.DetailedSightScreen.route+ "/ $sightId") {
@@ -26,7 +27,7 @@ fun Navigation(navController: NavHostController, navViewModel: NavigationViewMod
             } }
         }
         composable(NavigationRoute.NavigationScreen.route) {
-            NavigationScreen(navViewModel, mapViewModel)
+            NavigationScreen(navViewModel)
         }
         composable(NavigationRoute.CameraScreen.route) {
             CamScreen()

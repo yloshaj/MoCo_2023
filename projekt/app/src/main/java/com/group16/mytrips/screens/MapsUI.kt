@@ -1,5 +1,10 @@
 package com.group16.mytrips.screens
 
+import android.Manifest
+import android.content.pm.PackageManager
+import androidx.activity.compose.ManagedActivityResultLauncher
+import androidx.activity.compose.rememberLauncherForActivityResult
+import androidx.activity.result.contract.ActivityResultContracts
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.State
 import androidx.compose.ui.Modifier
@@ -19,39 +24,53 @@ import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.livedata.observeAsState
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
+import androidx.compose.runtime.setValue
+import androidx.compose.ui.platform.LocalContext
 
 import androidx.compose.ui.unit.dp
+import androidx.core.content.ContextCompat
+import com.google.android.gms.maps.GoogleMap
+import com.google.android.gms.maps.GoogleMapOptions
+import com.google.android.gms.maps.model.JointType
+import com.google.android.gms.maps.model.MapStyleOptions
 import com.google.maps.android.compose.MapProperties
+import com.google.maps.android.compose.MapUiSettings
+import com.google.maps.android.compose.Polyline
 import com.group16.mytrips.viewModel.MapViewModel
+import com.group16.mytrips.viewModel.NavigationViewModel
 
 
 @Composable
-fun MapsSDK(modifier: Modifier, sightList: State<MutableList<DefaultSight>>, cameraPosition: CameraPositionState, addDefualtLocation: (sight:DefaultSight) -> Unit, mapViewModel: MapViewModel) {
+fun MapsSDK(
+    modifier: Modifier,
+    sightList: State<MutableList<DefaultSight>>,
+    cameraPosition: CameraPositionState,
+    navViewModel: NavigationViewModel
+) {
 
-    LaunchedEffect(true) {
-        mapViewModel.locationSource.activate { location ->
+    LaunchedEffect(Unit) {
+        navViewModel.locationSource.activate { location ->
             location.let {
-                mapViewModel.currentLocation.value = LatLng(location.latitude, location.longitude)
+                navViewModel.currentLocation.value = LatLng(location.latitude, location.longitude)
             }
         }
     }
-    val loc by mapViewModel.currentLocation.observeAsState()
+    val loc by navViewModel.currentLocation.observeAsState()
 
 
-    
     val mapProperties = MapProperties(
-        isMyLocationEnabled = loc != null
+        isMyLocationEnabled = loc != null,
+
     )
-    
+
 
     GoogleMap(
         modifier = modifier,
         cameraPositionState = cameraPosition,
-        locationSource = mapViewModel.locationSource,
         properties = mapProperties,
         contentPadding = PaddingValues(top = 70.dp)
-
-
     ) {
 
         for (location in sightList.value) Marker(
@@ -64,6 +83,7 @@ fun MapsSDK(modifier: Modifier, sightList: State<MutableList<DefaultSight>>, cam
     }
 
 }
+
 @Composable
 fun MapsSDK1(modifier: Modifier) {
     val location = LatLng(51.0230345, 7.5654156)
@@ -72,19 +92,25 @@ fun MapsSDK1(modifier: Modifier) {
     val locationState2 = MarkerState(position = location2)
     val location3 = LatLng(51.0263193, 7.5634976)
     val locationState3 = MarkerState(position = location3)
-    val cameraPositionState = rememberCameraPositionState{
-            position = CameraPosition.fromLatLngZoom(location, 14f)
+    val cameraPositionState = rememberCameraPositionState {
+        position = CameraPosition.fromLatLngZoom(location, 14f)
     }
     GoogleMap(
         modifier = modifier,
         cameraPositionState = cameraPositionState
     ) {
-        Marker(state = locationState, title = "Sehenswürdigkeit",
-            icon = BitmapDescriptorFactory.defaultMarker(BitmapDescriptorFactory.HUE_AZURE))
-        Marker(state = locationState2, title = "Marker 2", visible = true,
-            icon = BitmapDescriptorFactory.defaultMarker(BitmapDescriptorFactory.HUE_AZURE))
-        Marker(state = locationState3, title = "Marker 3", visible = true,
-            icon = BitmapDescriptorFactory.defaultMarker(BitmapDescriptorFactory.HUE_AZURE))
+        Marker(
+            state = locationState, title = "Sehenswürdigkeit",
+            icon = BitmapDescriptorFactory.defaultMarker(BitmapDescriptorFactory.HUE_AZURE)
+        )
+        Marker(
+            state = locationState2, title = "Marker 2", visible = true,
+            icon = BitmapDescriptorFactory.defaultMarker(BitmapDescriptorFactory.HUE_AZURE)
+        )
+        Marker(
+            state = locationState3, title = "Marker 3", visible = true,
+            icon = BitmapDescriptorFactory.defaultMarker(BitmapDescriptorFactory.HUE_AZURE)
+        )
     }
 }
 
