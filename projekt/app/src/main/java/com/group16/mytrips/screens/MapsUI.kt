@@ -57,13 +57,28 @@ fun MapsSDK(
             }
         }
     }
+    val context = LocalContext.current
+
     val loc by navViewModel.currentLocation.observeAsState()
+    var permissionIsGranted by remember {
+        mutableStateOf(
+            ContextCompat.checkSelfPermission(
+                context,
+                Manifest.permission.ACCESS_FINE_LOCATION
+            ) == PackageManager.PERMISSION_GRANTED
+        )
+    }
+    if (permissionIsGranted != (ContextCompat.checkSelfPermission(
+            context,
+            Manifest.permission.ACCESS_FINE_LOCATION
+        ) == PackageManager.PERMISSION_GRANTED)
+    ) permissionIsGranted = !permissionIsGranted
 
 
     val mapProperties = MapProperties(
-        isMyLocationEnabled = loc != null,
+        isMyLocationEnabled = permissionIsGranted,
 
-    )
+        )
 
 
     GoogleMap(

@@ -55,7 +55,7 @@ class NavigationViewModel(context: Context): ViewModel() {
             }
         }.stateIn(
             viewModelScope,
-            SharingStarted.WhileSubscribed(5000),
+            SharingStarted.WhileSubscribed(2000),
             _defaultSightList.value
         )
 
