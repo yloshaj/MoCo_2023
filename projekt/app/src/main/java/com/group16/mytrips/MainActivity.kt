@@ -8,6 +8,7 @@ import android.util.Log
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.rememberLauncherForActivityResult
 import androidx.activity.compose.setContent
+import androidx.activity.result.ActivityResultLauncher
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
@@ -93,7 +94,7 @@ class MainActivity : ComponentActivity() {
                         innerPadding ->
                         Box(modifier = Modifier
                             .padding(PaddingValues(0.dp,0.dp,0.dp,innerPadding.calculateBottomPadding()))) {
-                            Navigation(navController = navController, navViewModel)
+                            Navigation(navController = navController, navViewModel,::requestPermission,requestPermissionLauncher)
                         }
                     }
 
@@ -101,25 +102,26 @@ class MainActivity : ComponentActivity() {
             }
         }
 
-    private fun requestCameraPermission() {
-            when {
-                ContextCompat.checkSelfPermission(
-                        this,
-                        android.Manifest.permission.CAMERA
-                )
-                        == PackageManager.PERMISSION_GRANTED -> {
-                    Log.i("ja", "Kamera zugriff bereits erlaubt")
-                }
-
-                ActivityCompat.shouldShowRequestPermissionRationale(
-                        this,
-                        android.Manifest.permission.CAMERA
-                )
-                -> Log.i("ja", "Zeige Kamera Permission Text")
-
-                else -> requestPermissionLauncher.launch(android.Manifest.permission.CAMERA)
+    private fun requestPermission(permission: String, title: String, activityResult: ActivityResultLauncher<String>) {
+        when {
+            ContextCompat.checkSelfPermission(
+                this,
+                permission
+            )
+                    == PackageManager.PERMISSION_GRANTED -> {
+                Log.i("ja", "$title zugriff bereits erlaubt")
+                //shouldShowCamera.value = true
             }
+
+            ActivityCompat.shouldShowRequestPermissionRationale(
+                this,
+                permission
+            )
+            -> Log.i("ja", "Zeige $title Permission Text")
+
+            else -> activityResult.launch(permission)
         }
+    }
 
 }
 
