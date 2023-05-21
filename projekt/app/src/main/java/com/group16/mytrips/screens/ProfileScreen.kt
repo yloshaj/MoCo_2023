@@ -224,7 +224,7 @@ fun SightGrid (list: State<MutableList<Sight>>, onItemClicked: (userId: String) 
 fun SightCard (sight: Sight, onItemClicked: (sightId: String) -> Unit) {
     Card(modifier = Modifier
         .widthIn(0.dp, 156.dp)
-        .padding(13.dp, 6.dp)
+        .padding(13.dp, 8.dp)
         .clickable { onItemClicked(sight.sightId.toString()) },
         elevation = CardDefaults.cardElevation(4.dp),
         colors = CardDefaults.cardColors(Color.White),

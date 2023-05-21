@@ -278,9 +278,9 @@ fun LocationCard(
                     else adjustedDistance = "$locationDistance m"
                     Text(
                         text = sight.sightName,
-                        fontSize = 18.sp, overflow = TextOverflow.Ellipsis, maxLines = 1
+                        fontSize = 16.sp, overflow = TextOverflow.Ellipsis, maxLines = 1
                     )
-                    Text(text = adjustedDistance)
+                    Text(text = adjustedDistance, fontSize = 14.sp)
                 }
 
                  Icon(
@@ -288,7 +288,7 @@ fun LocationCard(
                     contentDescription = "Default Picture of Sight",
                     tint = Color.Unspecified,
                     modifier = Modifier
-                        .scale(1f)
+                        .scale(1.3f)
                         .offset(0.dp, 0.dp)
                 )
 
