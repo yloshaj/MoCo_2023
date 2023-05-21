@@ -45,11 +45,11 @@ fun Navigation(
 ) {
     NavHost(navController = navController, startDestination = NavigationRoute.ProfileScreen.route) {
         composable(NavigationRoute.ProfileScreen.route) {
-            PreviewHeader { sightId ->
+            PreviewHeader ({ sightId ->
                 navController.navigate(NavigationRoute.DetailedSightScreen.route + "/ $sightId") {
                     popUpTo(NavigationRoute.ProfileScreen.route)
                 }
-            }
+            }, appViewModel)
         }
         composable(NavigationRoute.NavigationScreen.route) {
             NavigationScreen(navViewModel, appViewModel, requestPermission, permissionLauncher)
@@ -61,7 +61,7 @@ fun Navigation(
             )
         }
         composable(NavigationRoute.DetailedSightScreen.route + "/ {sightId}") { navBackStackEntry ->
-            SightScreen(navBackStackEntry.arguments?.getString("sightId"))
+            SightScreen(navBackStackEntry.arguments?.getString("sightId"), appViewModel)
         }
 
     }

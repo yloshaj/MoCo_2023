@@ -33,6 +33,8 @@ import androidx.compose.material3.ShapeDefaults
 import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.State
+import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
@@ -40,6 +42,7 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.rotate
+import androidx.compose.ui.draw.scale
 import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.RectangleShape
@@ -55,33 +58,22 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.group16.mytrips.R
 import com.group16.mytrips.data.Sight
+import com.group16.mytrips.viewModel.ApplicationViewModel
 import kotlin.math.roundToInt
 
-val sight0 = Sight(sightId = "sight0", picture = R.drawable.ic_dummylocationpic, sightName = "Location 0", date = "25.04,2023", coordinates = "Koordinaten")
-val sight1 = Sight(sightId = "sight1", picture = R.drawable.ic_dummylocationpic, sightName = "Location 1", date = "20.04.2023", coordinates = "Koordinaten")
-val sight2 = Sight(sightId = "sight2", picture = R.drawable.ic_dummylocationpic, sightName = "Location 2", date = "14.04.2023", coordinates = "Koordinaten")
-val sight3 = Sight(sightId = "sight3", picture = R.drawable.ic_dummylocationpic, sightName = "Location 3", date = "26.02.2023", coordinates = "Koordinaten")
-val sight4 = Sight(sightId = "sight4", picture = R.drawable.ic_dummylocationpic, sightName = "Location 4", date = "25,02,2023", coordinates = "Koordinaten")
-val sight5 = Sight(sightId = "sight5", picture = R.drawable.ic_dummylocationpic, sightName = "Location 5", date = "19.02.1023", coordinates = "Koordinaten")
-val sight6 = Sight(sightId = "sight6", picture = R.drawable.ic_dummylocationpic, sightName = "Location 6", date = "05.01.2023", coordinates = "Koordinaten")
-val sight7 = Sight(sightId = "sight7", picture = R.drawable.ic_dummylocationpic, sightName = "Location 7", date = "19.12.2022", coordinates = "Koordinaten")
-val sight8 = Sight(sightId = "sight8", picture = R.drawable.ic_dummylocationpic, sightName = "Location 8", date = "04.12.2022", coordinates = "Koordinaten")
 
-val listOfSight = listOf(sight0, sight1, sight2, sight3, sight4, sight5, sight6,sight7, sight8)
-val listOfAvatars = listOf(R.drawable.ic_av_cherry2,R.drawable.ic_av_fries,
-    R.drawable.ic_av_ironman,R.drawable.ic_av_mickey,R.drawable.ic_av_naruto,
-    R.drawable.ic_av_pikachu,R.drawable.ic_av_strawberry,R.drawable.ic_av_taco,
-    R.drawable.ic_dummyprofilepic, R.drawable.ic_dummylocationpic
-)
+
+
+
 
 @Composable
-fun SightScreen (sightId: String?) {
-
+fun SightScreen (sightId: String?, applicationViewModel: ApplicationViewModel) {
+    val sights = applicationViewModel.sightList.collectAsState()
     var currentSight by remember {
-        mutableStateOf(Sight("Sight Not Found!",0,"","",""))
+        mutableStateOf(Sight(-1,R.drawable.ic_dummylocationpic,R.drawable.ic_dummylocationpic, sightName = "", date = "", latitude = 0.0, longitude = 0.0))
     }
     if (sightId != null) {
-        for (sight in listOfSight) if (sightId == sight.sightId) currentSight = sight
+        for (sight in sights.value) if (sightId == sight.sightId.toString()) currentSight = sight
     }
     Box (
         Modifier
@@ -101,10 +93,13 @@ fun SightScreen (sightId: String?) {
 
 }
 @Composable
-fun ProfileScreen (profilbild: Painter, name: String, overAllXP: Int, listOfSight: List<Sight>, onItemClicked: (sightId: String) -> Unit) {
+fun ProfileScreen (applicationViewModel: ApplicationViewModel, onItemClicked: (sightId: String) -> Unit) {
+    val sights = applicationViewModel.sightList.collectAsState()
+
+
     Column {
-        ProfileHeader(profilbild = profilbild , name = name, overAllXP = overAllXP)
-        SightGrid(list = listOfSight, onItemClicked)
+        ProfileHeader(applicationViewModel)
+        SightGrid(list = sights, onItemClicked)
     }
 }
 @Composable
@@ -123,15 +118,16 @@ fun ProfilePic(modifier: Modifier, id: Int) {
 
 }
 @Composable
-fun ProfileHeader (profilbild: Painter, name: String, overAllXP: Int) {
+fun ProfileHeader (applicationViewModel: ApplicationViewModel) {
+    val avatarList = applicationViewModel.avatar.collectAsState()
+    val xp by applicationViewModel.xp.collectAsState()
+    val pic = avatarList.value[0]
     var expanded  by remember {
         mutableStateOf(false)
     }
-    var profilePic by remember {
-        mutableStateOf(profilbild)
-    }
+
     var profileId by remember {
-        mutableStateOf(R.drawable.ic_dummyprofilepic)
+        mutableStateOf(pic)
     }
     Card(
         elevation = CardDefaults.cardElevation(10.dp),
@@ -144,7 +140,7 @@ fun ProfileHeader (profilbild: Painter, name: String, overAllXP: Int) {
 
                 modifier = Modifier.fillMaxWidth()
             ) {
-                Text(text = name, fontSize = 30.sp, modifier = Modifier.padding(0.dp, 8.dp))
+                Text(text = "Max Mustermann", fontSize = 30.sp, modifier = Modifier.padding(0.dp, 8.dp))
                 Row(
                     horizontalArrangement = Arrangement.SpaceEvenly,
                     verticalAlignment = Alignment.CenterVertically,
@@ -154,13 +150,13 @@ fun ProfileHeader (profilbild: Painter, name: String, overAllXP: Int) {
                         .padding(0.dp)
                         .clickable { expanded = !expanded }, id = profileId)
 
-                    LevelBar(overAllXP = overAllXP)
+                    LevelBar(overAllXP = xp)
                 }
                 AnimatedVisibility(visible = expanded) {
-                    ProfileSelection1 { value ->
+                    ProfileSelection1 ({ value ->
                         profileId = value
                         expanded = !expanded
-                    }
+                    }, avatarList)
                 }
 
             }
@@ -207,14 +203,15 @@ fun LevelBar (overAllXP: Int) {
 }
 
 @Composable
-fun SightGrid (list: List<Sight>, onItemClicked: (userId: String) -> Unit) {
+fun SightGrid (list: State<MutableList<Sight>>, onItemClicked: (userId: String) -> Unit) {
+
         LazyVerticalGrid(
             columns = GridCells.Fixed(2),
             contentPadding = PaddingValues(10.dp)
         ) {
-            items(list.size) { it ->
+            items(list.value.size) { it ->
                 SightCard(
-                    sight = list[it],
+                    sight = list.value[it],
                     onItemClicked = onItemClicked
                 )
             }
@@ -227,21 +224,33 @@ fun SightGrid (list: List<Sight>, onItemClicked: (userId: String) -> Unit) {
 fun SightCard (sight: Sight, onItemClicked: (sightId: String) -> Unit) {
     Card(modifier = Modifier
         .widthIn(0.dp, 156.dp)
-        .padding(13.dp, 4.dp)
-        .clickable { onItemClicked(sight.sightId) },
-        elevation = CardDefaults.cardElevation(2.dp),
+        .padding(13.dp, 6.dp)
+        .clickable { onItemClicked(sight.sightId.toString()) },
+        elevation = CardDefaults.cardElevation(4.dp),
         colors = CardDefaults.cardColors(Color.White),
         shape = ShapeDefaults.ExtraSmall
     ) {
         Column(modifier = Modifier.padding(4.dp,2.dp)) {
-
-
-            Icon(
-                painterResource(id = sight.picture),
+            Box(modifier = Modifier.size(156.dp, 118.dp).padding(0.dp, 0.dp)) {Icon(
+                painterResource(id = sight.pictureThumbnail),
                 contentDescription = null,
                 tint = Color.Unspecified,
-                modifier = Modifier.padding(0.dp, 7.dp)
-            )
+                modifier = Modifier.fillMaxSize()
+
+            )}
+            /*
+            Image(painterResource(id = sight.pictureThumbnail),
+                contentDescription = null, modifier = Modifier
+                    .scale(3f)
+                    .padding(0.dp, 20.dp))
+            Icon(
+                painterResource(id = sight.pictureThumbnail),
+                contentDescription = null,
+                tint = Color.Unspecified,
+                modifier = Modifier
+                    .scale(3f)
+                    .padding(0.dp, 7.dp)
+            )*/
             Row(modifier = Modifier.heightIn(50.dp, 60.dp)) {
 
                 Text(
@@ -256,7 +265,7 @@ fun SightCard (sight: Sight, onItemClicked: (sightId: String) -> Unit) {
             }
             Text(text = sight.date, fontSize = 14.sp, fontWeight = FontWeight.Bold)
             Text(
-                text = sight.coordinates,
+                text = "${sight.latitude}, ${sight.longitude}",
                 fontSize = 13.sp,
                 overflow = TextOverflow.Ellipsis,
                 modifier = Modifier.widthIn(0.dp, 156.dp),
@@ -269,24 +278,28 @@ fun SightCard (sight: Sight, onItemClicked: (sightId: String) -> Unit) {
 
 //@Preview(showBackground = true)
 @Composable
-fun PreviewHeader(onItemClicked: (sightId: String) -> Unit) {
+fun PreviewHeader(onItemClicked: (sightId: String) -> Unit, applicationViewModel: ApplicationViewModel) {
     var xp by remember {
         mutableStateOf(670)
     }
+
     //ProfileHeader(profilbild = painterResource(id = R.drawable.ic_dummyprofilepic), name = "Max Mustermann", overAllXP = xp)
-    ProfileScreen(profilbild = painterResource(id = R.drawable.ic_dummyprofilepic), name = "Max Mustermann", overAllXP =xp, listOfSight, onItemClicked)
+    ProfileScreen(applicationViewModel, onItemClicked)
 }
+
+
+
 @Preview(showBackground = true)
 @Composable
 fun ActualPreview() {
     //ProfileHeader(profilbild = painterResource(id = R.drawable.ic_dummyprofilepic), name = "Max Mustermann", overAllXP = 130 )
     //ProfileSelection1()
-    SlideCard(onClick = {})
+    //SlideCard(onClick = {})
 }
 
 
 @Composable
-fun ProfileSelection1 (onClick: (id: Int) -> Unit){
+fun ProfileSelection1 (onClick: (id: Int) -> Unit, avatarList: State<List<Int>>){
 
     Column(modifier = Modifier
         .fillMaxWidth()
@@ -295,14 +308,14 @@ fun ProfileSelection1 (onClick: (id: Int) -> Unit){
         val gridModifier = Modifier
             .weight(1f)
             .padding(0.dp, 10.dp)
-        TierGrid(modifier = gridModifier, onClick)
+        TierGrid(modifier = gridModifier, onClick, avatarList)
 
     }
 
 }
 
 @Composable
-fun TierGrid (modifier: Modifier, onClick: (id: Int) -> Unit){
+fun TierGrid (modifier: Modifier, onClick: (id: Int) -> Unit, avatarList: State<List<Int>>){
 
     Card(modifier = modifier, elevation = CardDefaults.cardElevation(5.dp),
         colors = CardDefaults.cardColors(containerColor = Color.White), shape = RectangleShape) {
@@ -319,8 +332,8 @@ fun TierGrid (modifier: Modifier, onClick: (id: Int) -> Unit){
                 horizontalArrangement = Arrangement.spacedBy(10.dp)
 
             ) {
-                items(listOfAvatars.size) { it ->
-                    val avatarId = listOfAvatars[it]
+                items(avatarList.value.size) { it ->
+                    val avatarId = avatarList.value[it]
                     Icon(
                         painter = painterResource(avatarId),
                         contentDescription = null, tint = Color.Unspecified,
@@ -338,7 +351,7 @@ fun TierGrid (modifier: Modifier, onClick: (id: Int) -> Unit){
         //SlideCard(onClick = onClick)
     }
 }
-
+/*
 @Composable
 fun SlideCard (onClick: (id: Int) -> Unit) {
     Box(modifier = Modifier.height(110.dp), contentAlignment = Alignment.Center) {
@@ -367,16 +380,18 @@ fun SlideCard (onClick: (id: Int) -> Unit) {
             val brush2 = Brush.horizontalGradient(listOf(Color(0f,0f,0f,0f), Color.Gray))
             Icon(imageVector = Icons.Rounded.ArrowDropDown, contentDescription = null, tint = Color(1f,1f,1f,0.7f),
                 modifier = Modifier
-                .fillMaxHeight()
-                .background(brush1)
-                .rotate(90f)
+                    .fillMaxHeight()
+                    .background(brush1)
+                    .rotate(90f)
             )
             Icon(imageVector = Icons.Rounded.ArrowDropDown, contentDescription = null, tint = Color(1f,1f,1f,0.7f) ,
                 modifier = Modifier
-                .fillMaxHeight()
-                .background(brush2)
-                .rotate(-90f))
+                    .fillMaxHeight()
+                    .background(brush2)
+                    .rotate(-90f))
         }
     }
 
 }
+
+ */
