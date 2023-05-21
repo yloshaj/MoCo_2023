@@ -68,10 +68,10 @@ val sight7 = Sight(sightId = "sight7", picture = R.drawable.ic_dummylocationpic,
 val sight8 = Sight(sightId = "sight8", picture = R.drawable.ic_dummylocationpic, sightName = "Location 8", date = "04.12.2022", coordinates = "Koordinaten")
 
 val listOfSight = listOf(sight0, sight1, sight2, sight3, sight4, sight5, sight6,sight7, sight8)
-val listOfAvatars = listOf(R.drawable.ic_dummyprofilepic,R.drawable.ic_dummyprofilepic,
-    R.drawable.ic_dummyprofilepic,R.drawable.ic_dummyprofilepic,R.drawable.ic_dummyprofilepic,
-    R.drawable.ic_dummyprofilepic,R.drawable.ic_dummyprofilepic,R.drawable.ic_dummyprofilepic,
-    R.drawable.ic_dummyprofilepic,R.drawable.ic_dummyprofilepic,R.drawable.ic_dummyprofilepic, R.drawable.ic_dummylocationpic
+val listOfAvatars = listOf(R.drawable.ic_av_cherry2,R.drawable.ic_av_fries,
+    R.drawable.ic_av_ironman,R.drawable.ic_av_mickey,R.drawable.ic_av_naruto,
+    R.drawable.ic_av_pikachu,R.drawable.ic_av_strawberry,R.drawable.ic_av_taco,
+    R.drawable.ic_dummyprofilepic, R.drawable.ic_dummylocationpic
 )
 
 @Composable

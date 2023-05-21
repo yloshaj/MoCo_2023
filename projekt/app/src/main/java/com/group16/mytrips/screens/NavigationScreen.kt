@@ -32,6 +32,7 @@ import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.ShapeDefaults
+import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextField
 import androidx.compose.material3.TextFieldDefaults
@@ -53,9 +54,12 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.draw.alpha
 import androidx.compose.ui.draw.scale
 import androidx.compose.ui.focus.FocusManager
+import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.input.pointer.pointerInput
+import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.modifier.modifierLocalConsumer
 import androidx.compose.ui.platform.LocalFocusManager
+import androidx.compose.ui.res.vectorResource
 import androidx.compose.ui.text.input.TextFieldValue
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.sp
@@ -241,7 +245,7 @@ fun LocationCard(
     Card(
         colors = CardDefaults.cardColors(Color.White),
         modifier = Modifier
-            .heightIn(0.dp, 80.dp)
+            .heightIn(80.dp, 80.dp)
             .padding(0.dp, 0.dp)
             .background(Color.White)
             .clickable {
@@ -252,11 +256,11 @@ fun LocationCard(
         shape = ShapeDefaults.ExtraSmall,
         elevation = CardDefaults.cardElevation(2.dp)
     ) {
-        Column(horizontalAlignment = Alignment.CenterHorizontally) {
+        Column(horizontalAlignment = Alignment.CenterHorizontally, verticalArrangement = Arrangement.Center, modifier = Modifier.fillMaxHeight()) {
             Row(
                 verticalAlignment = Alignment.CenterVertically,
                 horizontalArrangement = Arrangement.SpaceEvenly,
-                modifier = Modifier.fillMaxWidth()
+                modifier = Modifier.fillMaxSize()
             ) {
                 Icon(
                     painter = painterResource(id = R.drawable.ic_locpoint),
@@ -265,7 +269,7 @@ fun LocationCard(
                 )
                 Column(
                     modifier = Modifier
-                        .heightIn(0.dp, 50.dp)
+                        .heightIn( 50.dp, 50.dp)
                         .widthIn(156.dp, 156.dp)
                 ) {
                     var adjustedDistance = ""
@@ -278,13 +282,14 @@ fun LocationCard(
                     )
                     Text(text = adjustedDistance)
                 }
-                Icon(
-                    painter = painterResource(id = sight.defualtPicture),
+
+                 Icon(
+                    painter = painterResource(id = sight.pictureThumbnail),
                     contentDescription = "Default Picture of Sight",
                     tint = Color.Unspecified,
                     modifier = Modifier
-                        .scale(0.65f)
-                        .offset(32.dp, 0.dp)
+                        .scale(1f)
+                        .offset(0.dp, 0.dp)
                 )
 
             }

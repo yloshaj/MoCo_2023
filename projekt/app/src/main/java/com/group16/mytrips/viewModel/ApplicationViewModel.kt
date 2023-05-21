@@ -17,7 +17,10 @@ class ApplicationViewModel(application: Application) : AndroidViewModel(applicat
     private val modelClass = ModelClass()
 
     private var _defaultSightList = MutableStateFlow(modelClass.defaultSightList)
-    val sightList = _defaultSightList.asStateFlow()
+    val defaultSightList = _defaultSightList.asStateFlow()
+
+    private var _sightList = MutableStateFlow(modelClass.sightList)
+    val sightList = _sightList.asStateFlow()
 
     fun getLocationLiveData() = locationLiveData
 

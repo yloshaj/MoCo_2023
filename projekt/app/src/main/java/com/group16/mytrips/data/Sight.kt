@@ -1,16 +1,22 @@
 package com.group16.mytrips.data
 
+import android.net.Uri
+
 data class Sight(
-    val sightId: String,
+    val sightId: Int,
     var picture: Int,
+    var pictureThumbnail: Int,
+    var pictureUri: Uri? = null,
     val sightName: String,
     val date: String,
-    val coordinates: String
+    val latitude: Double,
+    val longitude: Double,
 )
 
 data class DefaultSight(
     val sightId: Int,
     var defualtPicture: Int,
+    var pictureThumbnail: Int,
     val sightName: String,
     val latitude: Double,
     val longitude: Double,
