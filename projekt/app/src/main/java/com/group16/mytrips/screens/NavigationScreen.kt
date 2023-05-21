@@ -2,10 +2,12 @@ package com.group16.mytrips.screens
 
 import android.Manifest
 import androidx.activity.compose.ManagedActivityResultLauncher
+import androidx.activity.result.ActivityResultLauncher
 import androidx.compose.animation.AnimatedVisibility
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
+import androidx.compose.foundation.gestures.detectTapGestures
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
@@ -45,10 +47,13 @@ import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import com.group16.mytrips.R
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.livedata.observeAsState
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.draw.alpha
 import androidx.compose.ui.draw.scale
+import androidx.compose.ui.focus.FocusManager
+import androidx.compose.ui.input.pointer.pointerInput
 import androidx.compose.ui.modifier.modifierLocalConsumer
 import androidx.compose.ui.platform.LocalFocusManager
 import androidx.compose.ui.text.input.TextFieldValue
@@ -60,30 +65,47 @@ import com.google.android.gms.maps.model.LatLng
 import com.google.maps.android.compose.CameraPositionState
 import com.google.maps.android.compose.rememberCameraPositionState
 import com.group16.mytrips.data.DefaultSight
+import com.group16.mytrips.viewModel.ApplicationViewModel
 import com.group16.mytrips.viewModel.MapViewModel
 import com.group16.mytrips.viewModel.NavigationViewModel
 import kotlin.math.roundToInt
 
 
 @Composable
-fun NavigationScreen(navViewModel: NavigationViewModel) {
-    var cameraPosition = rememberCameraPositionState {
-        position = CameraPosition.fromLatLngZoom(LatLng(51.0230345, 7.5654156), 14f)
-    }
-    var sightList = navViewModel.sightList.collectAsState()
-    PermissionAlert(
+fun NavigationScreen(
+    navViewModel: NavigationViewModel,
+    applicationViewModel: ApplicationViewModel,
+    requestPermission: (String, String, ActivityResultLauncher<String>) -> Unit,
+    permissionLauncher: ActivityResultLauncher<String>
+) {
+    LaunchPermission(
+        permission = Manifest.permission.ACCESS_FINE_LOCATION,
         permissionTitle = "Location",
-        rationale = "Location needed for Navigation",
-        permission = Manifest.permission.ACCESS_FINE_LOCATION
+        rationale = "Location needed for navigation",
+        requestPermission = requestPermission,
+        permissionLauncher = permissionLauncher
     )
-    Box {
+    val loc = applicationViewModel.getLocationLiveData().observeAsState()
+    var sightList = applicationViewModel.getSortedList().collectAsState()
+    var cameraPosition = rememberCameraPositionState {
+        if (loc.value != null)
+            position = CameraPosition.fromLatLngZoom(LatLng(loc.value!!.latitude, loc.value!!.longitude), 14f)
+        else
+            position = CameraPosition.fromLatLngZoom(LatLng(sightList.value[0].latitude, sightList.value[0].longitude), 14f)
+    }
 
+
+
+
+    Box {
+        Text(text = loc.value.toString())
         //Maps()
-        Column() {
+        Column {
+
             MapsSDK(
                 modifier = Modifier
                     .fillMaxWidth()
-                    .weight(0.6f), sightList, cameraPosition, navViewModel
+                    .weight(0.6f), sightList, cameraPosition,loc, applicationViewModel
             )
             Box(modifier = Modifier.weight(0.4f)) {
 
@@ -122,7 +144,9 @@ fun SearchBar(navViewModel: NavigationViewModel) {
     val sightListForQuery by navViewModel.sightListForQuery.collectAsState()
 
     val focusManager = LocalFocusManager.current
-    Column() {
+    Column(modifier = Modifier.pointerInput(Unit) {
+        detectTapGestures(onTap = { focusManager.clearFocus(); navViewModel.setIsSearching(false) })
+    }) {
         Card(
             modifier = Modifier
                 .fillMaxWidth()
@@ -198,7 +222,7 @@ fun LocationColumn(
 
 
                 LocationCard(
-                    locationDistance = 2300, location, cameraPosition, moveCamera
+                    locationDistance = location.distance ?: 0, location, cameraPosition, moveCamera
 
                 )
                 Divider(thickness = 1.dp)

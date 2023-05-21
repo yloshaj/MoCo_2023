@@ -31,6 +31,7 @@ import androidx.compose.ui.unit.dp
 import androidx.core.app.ActivityCompat
 import androidx.core.content.ContextCompat
 import androidx.core.content.PermissionChecker.PERMISSION_GRANTED
+import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.navigation.compose.rememberNavController
 import com.google.android.gms.maps.model.LatLng
 import com.group16.mytrips.data.BottomNavigationItem
@@ -39,6 +40,7 @@ import com.group16.mytrips.screens.Navigation
 import com.group16.mytrips.screens.NavigationRoute
 
 import com.group16.mytrips.ui.theme.MyTripsTheme
+import com.group16.mytrips.viewModel.ApplicationViewModel
 import com.group16.mytrips.viewModel.MapViewModel
 import com.group16.mytrips.viewModel.NavigationViewModel
 
@@ -61,7 +63,7 @@ class MainActivity : ComponentActivity() {
             setContent {
                 val navViewModel = NavigationViewModel(this.applicationContext)
 
-                //val mapViewModel = MapViewModel(this.applicationContext)
+                val appViewModel = ApplicationViewModel(this.application)
 
 
                 MyTripsTheme {
@@ -94,7 +96,7 @@ class MainActivity : ComponentActivity() {
                         innerPadding ->
                         Box(modifier = Modifier
                             .padding(PaddingValues(0.dp,0.dp,0.dp,innerPadding.calculateBottomPadding()))) {
-                            Navigation(navController = navController, navViewModel,::requestPermission,requestPermissionLauncher)
+                            Navigation(navController = navController, navViewModel,::requestPermission,requestPermissionLauncher, appViewModel)
                         }
                     }
 

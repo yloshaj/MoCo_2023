@@ -38,6 +38,8 @@ import com.google.android.gms.maps.model.MapStyleOptions
 import com.google.maps.android.compose.MapProperties
 import com.google.maps.android.compose.MapUiSettings
 import com.google.maps.android.compose.Polyline
+import com.group16.mytrips.data.LocationDetails
+import com.group16.mytrips.viewModel.ApplicationViewModel
 import com.group16.mytrips.viewModel.MapViewModel
 import com.group16.mytrips.viewModel.NavigationViewModel
 
@@ -46,37 +48,17 @@ import com.group16.mytrips.viewModel.NavigationViewModel
 fun MapsSDK(
     modifier: Modifier,
     sightList: State<MutableList<DefaultSight>>,
-    cameraPosition: CameraPositionState,
-    navViewModel: NavigationViewModel
+    cameraPosition: CameraPositionState, loc : State<LocationDetails?>,
+    appViewModel: ApplicationViewModel
 ) {
 
-    LaunchedEffect(Unit) {
-        navViewModel.locationSource.activate { location ->
-            location.let {
-                navViewModel.currentLocation.value = LatLng(location.latitude, location.longitude)
-            }
-        }
-    }
-    val context = LocalContext.current
 
-    val loc by navViewModel.currentLocation.observeAsState()
-    var permissionIsGranted by remember {
-        mutableStateOf(
-            ContextCompat.checkSelfPermission(
-                context,
-                Manifest.permission.ACCESS_FINE_LOCATION
-            ) == PackageManager.PERMISSION_GRANTED
-        )
-    }
-    if (permissionIsGranted != (ContextCompat.checkSelfPermission(
-            context,
-            Manifest.permission.ACCESS_FINE_LOCATION
-        ) == PackageManager.PERMISSION_GRANTED)
-    ) permissionIsGranted = !permissionIsGranted
+    val location = appViewModel.getLocationLiveData().observeAsState()
+
 
 
     val mapProperties = MapProperties(
-        isMyLocationEnabled = permissionIsGranted,
+        isMyLocationEnabled = location.value != null,
 
         )
 

@@ -7,6 +7,7 @@ import androidx.navigation.NavHostController
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import com.example.articlecamera.Cam.CameraView
+import com.group16.mytrips.viewModel.ApplicationViewModel
 import com.group16.mytrips.viewModel.MapViewModel
 import com.group16.mytrips.viewModel.NavigationViewModel
 
@@ -39,7 +40,8 @@ fun Navigation(
     navController: NavHostController,
     navViewModel: NavigationViewModel,
     requestPermission: (String, String, ActivityResultLauncher<String>) -> Unit,
-    permissionLauncher: ActivityResultLauncher<String>
+    permissionLauncher: ActivityResultLauncher<String>,
+    appViewModel: ApplicationViewModel
 ) {
     NavHost(navController = navController, startDestination = NavigationRoute.ProfileScreen.route) {
         composable(NavigationRoute.ProfileScreen.route) {
@@ -50,7 +52,7 @@ fun Navigation(
             }
         }
         composable(NavigationRoute.NavigationScreen.route) {
-            NavigationScreen(navViewModel)
+            NavigationScreen(navViewModel, appViewModel, requestPermission, permissionLauncher)
         }
         composable(NavigationRoute.CameraScreen.route) {
             CameraView(
