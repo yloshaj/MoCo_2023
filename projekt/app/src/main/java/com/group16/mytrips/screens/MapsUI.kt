@@ -1,10 +1,5 @@
 package com.group16.mytrips.screens
 
-import android.Manifest
-import android.content.pm.PackageManager
-import androidx.activity.compose.ManagedActivityResultLauncher
-import androidx.activity.compose.rememberLauncherForActivityResult
-import androidx.activity.result.contract.ActivityResultContracts
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.State
 import androidx.compose.ui.Modifier
@@ -19,29 +14,12 @@ import com.google.maps.android.compose.MarkerState
 import com.google.maps.android.compose.rememberCameraPositionState
 import com.group16.mytrips.data.DefaultSight
 import androidx.compose.foundation.layout.PaddingValues
-import androidx.compose.material3.Text
-import androidx.compose.runtime.LaunchedEffect
-import androidx.compose.runtime.collectAsState
-import androidx.compose.runtime.getValue
 import androidx.compose.runtime.livedata.observeAsState
-import androidx.compose.runtime.mutableStateOf
-import androidx.compose.runtime.remember
-import androidx.compose.runtime.setValue
-import androidx.compose.ui.platform.LocalContext
 
 import androidx.compose.ui.unit.dp
-import androidx.core.content.ContextCompat
-import com.google.android.gms.maps.GoogleMap
-import com.google.android.gms.maps.GoogleMapOptions
-import com.google.android.gms.maps.model.JointType
-import com.google.android.gms.maps.model.MapStyleOptions
 import com.google.maps.android.compose.MapProperties
-import com.google.maps.android.compose.MapUiSettings
-import com.google.maps.android.compose.Polyline
 import com.group16.mytrips.data.LocationDetails
 import com.group16.mytrips.viewModel.ApplicationViewModel
-import com.group16.mytrips.viewModel.MapViewModel
-import com.group16.mytrips.viewModel.NavigationViewModel
 
 
 @Composable

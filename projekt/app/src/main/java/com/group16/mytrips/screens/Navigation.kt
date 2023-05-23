@@ -1,6 +1,5 @@
 package com.group16.mytrips.screens
 
-import androidx.activity.compose.ManagedActivityResultLauncher
 import androidx.activity.result.ActivityResultLauncher
 import androidx.compose.runtime.Composable
 import androidx.navigation.NavHostController
@@ -8,8 +7,7 @@ import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import com.example.articlecamera.Cam.CameraView
 import com.group16.mytrips.viewModel.ApplicationViewModel
-import com.group16.mytrips.viewModel.MapViewModel
-import com.group16.mytrips.viewModel.NavigationViewModel
+import com.group16.mytrips.viewModel.ProfileViewModel
 
 sealed class NavigationRoute {
     object ProfileScreen {
@@ -38,10 +36,9 @@ sealed class NavigationRoute {
 @Composable
 fun Navigation(
     navController: NavHostController,
-    navViewModel: NavigationViewModel,
-    requestPermission: (String, String, ActivityResultLauncher<String>) -> Unit,
-    permissionLauncher: ActivityResultLauncher<String>,
-    appViewModel: ApplicationViewModel
+    appViewModel: ApplicationViewModel,
+    profileViewModel: ProfileViewModel
+
 ) {
     NavHost(navController = navController, startDestination = NavigationRoute.ProfileScreen.route) {
         composable(NavigationRoute.ProfileScreen.route) {
@@ -49,19 +46,20 @@ fun Navigation(
                 navController.navigate(NavigationRoute.DetailedSightScreen.route + "/ $sightId") {
                     popUpTo(NavigationRoute.ProfileScreen.route)
                 }
-            }, appViewModel)
+            }, profileViewModel)
         }
         composable(NavigationRoute.NavigationScreen.route) {
-            NavigationScreen(navViewModel, appViewModel, requestPermission, permissionLauncher)
+            NavigationScreen(appViewModel) {
+                navController.navigate(
+                    NavigationRoute.NavigationScreen.route
+                ) {popUpTo(NavigationRoute.ProfileScreen.route)}
+            }
         }
         composable(NavigationRoute.CameraScreen.route) {
-            CameraView(
-                requestPermission = requestPermission,
-                permissionLauncher = permissionLauncher
-            )
+            CameraView()
         }
         composable(NavigationRoute.DetailedSightScreen.route + "/ {sightId}") { navBackStackEntry ->
-            SightScreen(navBackStackEntry.arguments?.getString("sightId"), appViewModel)
+            SightScreen(navBackStackEntry.arguments?.getString("sightId"), profileViewModel)
         }
 
     }

@@ -6,23 +6,19 @@ import android.content.pm.PackageManager
 import android.os.Bundle
 import android.util.Log
 import androidx.activity.ComponentActivity
-import androidx.activity.compose.rememberLauncherForActivityResult
 import androidx.activity.compose.setContent
 import androidx.activity.result.ActivityResultLauncher
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.compose.foundation.layout.Box
-import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.padding
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.rounded.Person
 import androidx.compose.material.icons.rounded.Place
-import androidx.compose.material3.Button
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.res.vectorResource
@@ -30,10 +26,7 @@ import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.core.app.ActivityCompat
 import androidx.core.content.ContextCompat
-import androidx.core.content.PermissionChecker.PERMISSION_GRANTED
-import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.navigation.compose.rememberNavController
-import com.google.android.gms.maps.model.LatLng
 import com.group16.mytrips.data.BottomNavigationItem
 import com.group16.mytrips.screens.BottomNavigationBar
 import com.group16.mytrips.screens.Navigation
@@ -41,8 +34,8 @@ import com.group16.mytrips.screens.NavigationRoute
 
 import com.group16.mytrips.ui.theme.MyTripsTheme
 import com.group16.mytrips.viewModel.ApplicationViewModel
-import com.group16.mytrips.viewModel.MapViewModel
-import com.group16.mytrips.viewModel.NavigationViewModel
+import com.group16.mytrips.viewModel.CameraViewModel
+import com.group16.mytrips.viewModel.ProfileViewModel
 
 
 class MainActivity : ComponentActivity() {
@@ -61,8 +54,8 @@ class MainActivity : ComponentActivity() {
         override fun onCreate(savedInstanceState: Bundle?) {
             super.onCreate(savedInstanceState)
             setContent {
-                val navViewModel = NavigationViewModel(this.applicationContext)
-
+                val profileViewModel = ProfileViewModel()
+                val cameraViewModel = CameraViewModel(this.application)
                 val appViewModel = ApplicationViewModel(this.application)
 
 
@@ -96,12 +89,14 @@ class MainActivity : ComponentActivity() {
                         innerPadding ->
                         Box(modifier = Modifier
                             .padding(PaddingValues(0.dp,0.dp,0.dp,innerPadding.calculateBottomPadding()))) {
-                            Navigation(navController = navController, navViewModel,::requestPermission,requestPermissionLauncher, appViewModel)
+                            Navigation(navController = navController, appViewModel, profileViewModel)
                         }
                     }
 
                 }
+
             }
+
         }
 
     private fun requestPermission(permission: String, title: String, activityResult: ActivityResultLauncher<String>) {

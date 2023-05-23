@@ -1,7 +1,6 @@
 package com.group16.mytrips.screens
 
 import android.Manifest
-import androidx.activity.compose.ManagedActivityResultLauncher
 import androidx.activity.result.ActivityResultLauncher
 import androidx.compose.animation.AnimatedVisibility
 import androidx.compose.foundation.Image
@@ -27,12 +26,11 @@ import androidx.compose.material.icons.rounded.Search
 import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.Divider
-import androidx.compose.material3.DropdownMenu
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
+import androidx.compose.material3.ScaffoldDefaults
 import androidx.compose.material3.ShapeDefaults
-import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextField
 import androidx.compose.material3.TextFieldDefaults
@@ -53,41 +51,30 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.draw.alpha
 import androidx.compose.ui.draw.scale
-import androidx.compose.ui.focus.FocusManager
-import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.input.pointer.pointerInput
-import androidx.compose.ui.layout.ContentScale
-import androidx.compose.ui.modifier.modifierLocalConsumer
 import androidx.compose.ui.platform.LocalFocusManager
-import androidx.compose.ui.res.vectorResource
-import androidx.compose.ui.text.input.TextFieldValue
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.sp
-import androidx.lifecycle.viewmodel.compose.viewModel
 import com.google.android.gms.maps.model.CameraPosition
 import com.google.android.gms.maps.model.LatLng
 import com.google.maps.android.compose.CameraPositionState
 import com.google.maps.android.compose.rememberCameraPositionState
 import com.group16.mytrips.data.DefaultSight
 import com.group16.mytrips.viewModel.ApplicationViewModel
-import com.group16.mytrips.viewModel.MapViewModel
-import com.group16.mytrips.viewModel.NavigationViewModel
 import kotlin.math.roundToInt
 
 
 @Composable
 fun NavigationScreen(
-    navViewModel: NavigationViewModel,
+
     applicationViewModel: ApplicationViewModel,
-    requestPermission: (String, String, ActivityResultLauncher<String>) -> Unit,
-    permissionLauncher: ActivityResultLauncher<String>
+    navigate: () -> Unit
 ) {
     LaunchPermission(
         permission = Manifest.permission.ACCESS_FINE_LOCATION,
         permissionTitle = "Location",
         rationale = "Location needed for navigation",
-        requestPermission = requestPermission,
-        permissionLauncher = permissionLauncher
+        navigate = navigate
     )
     val loc = applicationViewModel.getLocationLiveData().observeAsState()
     var sightList = applicationViewModel.getSortedList().collectAsState()
@@ -116,7 +103,7 @@ fun NavigationScreen(
             }
         }
 
-        SearchBar(navViewModel)
+        SearchBar(applicationViewModel)
         Column() {
             Box(
                 modifier = Modifier
@@ -125,7 +112,7 @@ fun NavigationScreen(
             )
 
             Box(modifier = Modifier.weight(0.4f)) {
-                LocationColumn(navViewModel, sightList, cameraPosition)
+                LocationColumn(applicationViewModel, sightList, cameraPosition)
             }
 
         }
@@ -142,14 +129,14 @@ fun Maps() {
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
-fun SearchBar(navViewModel: NavigationViewModel) {
-    val isSearching by navViewModel.isSearching.collectAsState()
-    val searchText by navViewModel.searchtext.collectAsState()
-    val sightListForQuery by navViewModel.sightListForQuery.collectAsState()
+fun SearchBar(appViewModel: ApplicationViewModel) {
+    val isSearching by appViewModel.isSearching.collectAsState()
+    val searchText by appViewModel.searchtext.collectAsState()
+    val sightListForQuery by appViewModel.sightListForQuery.collectAsState()
 
     val focusManager = LocalFocusManager.current
     Column(modifier = Modifier.pointerInput(Unit) {
-        detectTapGestures(onTap = { focusManager.clearFocus(); navViewModel.setIsSearching(false) })
+        detectTapGestures(onTap = { focusManager.clearFocus(); appViewModel.setIsSearching(false) })
     }) {
         Card(
             modifier = Modifier
@@ -168,8 +155,8 @@ fun SearchBar(navViewModel: NavigationViewModel) {
                     ),
                     value = searchText,
                     onValueChange = {
-                        navViewModel.onSearchTextChange(it)
-                        navViewModel.setIsSearching(true)
+                        appViewModel.onSearchTextChange(it)
+                        appViewModel.setIsSearching(true)
                     },
                     modifier = Modifier
                         .weight(7f)
@@ -181,8 +168,8 @@ fun SearchBar(navViewModel: NavigationViewModel) {
 
                         IconButton(onClick = {
                             focusManager.clearFocus()
-                            navViewModel.onSearchTextChange("")
-                            navViewModel.setIsSearching(false)
+                            appViewModel.onSearchTextChange("")
+                            appViewModel.setIsSearching(false)
 
                         }) {
                             Icon(
@@ -200,10 +187,18 @@ fun SearchBar(navViewModel: NavigationViewModel) {
             }
         }
         AnimatedVisibility(visible = isSearching && sightListForQuery.isNotEmpty()) {
-            Card(modifier = Modifier.fillMaxWidth()) {
-                LazyColumn() {
+            Box(modifier = Modifier
+                .fillMaxWidth()
+                .heightIn(0.dp, 220.dp)
+                .padding(18.dp, 0.dp)
+                .background(color = Color.White)) {
+            //(modifier = Modifier.fillMaxWidth().heightIn(0.dp,220.dp).padding(18.dp, 0.dp), shape = ShapeDefaults.ExtraSmall, colors = CardDefaults.cardColors(Color.LightGray)) {
+                LazyColumn(modifier = Modifier.fillMaxWidth()) {
                     items(sightListForQuery.size) {
-                        Text(text = sightListForQuery[it].sightName)
+                        Card() {
+                            Text(text = sightListForQuery[it].sightName, modifier = Modifier.heightIn(20.dp),)
+                        }
+
                     }
                 }
             }
@@ -214,10 +209,10 @@ fun SearchBar(navViewModel: NavigationViewModel) {
 
 @Composable
 fun LocationColumn(
-    navViewModel: NavigationViewModel, sightList: State<MutableList<DefaultSight>>,
+    applicationViewModel: ApplicationViewModel, sightList: State<MutableList<DefaultSight>>,
     cameraPosition: CameraPositionState
 ) {
-    val moveCamera = navViewModel::moveCameraPosition
+    val moveCamera = applicationViewModel::moveCameraPosition
     Card(elevation = CardDefaults.cardElevation(10.dp)) {
 
 
@@ -269,7 +264,7 @@ fun LocationCard(
                 )
                 Column(
                     modifier = Modifier
-                        .heightIn( 50.dp, 50.dp)
+                        .heightIn(50.dp, 50.dp)
                         .widthIn(156.dp, 156.dp)
                 ) {
                     var adjustedDistance = ""

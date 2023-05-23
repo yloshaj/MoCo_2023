@@ -3,16 +3,27 @@ package com.group16.mytrips.viewModel
 import android.app.Application
 import android.location.Location
 import androidx.lifecycle.AndroidViewModel
+import androidx.lifecycle.viewModelScope
+import com.google.android.gms.maps.CameraUpdateFactory
+import com.google.android.gms.maps.model.CameraPosition
+import com.google.android.gms.maps.model.LatLng
+import com.google.maps.android.compose.CameraPositionState
 import com.group16.mytrips.data.DefaultSight
 import com.group16.mytrips.data.LocationLiveData
 import com.group16.mytrips.data.ModelClass
+import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.flow.MutableStateFlow
+import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
+import kotlinx.coroutines.flow.combine
 import kotlinx.coroutines.flow.forEach
+import kotlinx.coroutines.flow.stateIn
+import kotlinx.coroutines.launch
 import kotlin.math.roundToInt
 
 class ApplicationViewModel(application: Application) : AndroidViewModel(application) {
+
     private val locationLiveData = LocationLiveData(application)
     private val modelClass = ModelClass()
 
@@ -66,6 +77,52 @@ class ApplicationViewModel(application: Application) : AndroidViewModel(applicat
         //list.value.sortedByDescending { it.distance }
         list.value.sortBy { it.distance }
         return list
+    }
+
+    private var _isSearching = MutableStateFlow(true)
+    val isSearching = _isSearching.asStateFlow()
+
+    private val _searchtext = MutableStateFlow("")
+    val searchtext = _searchtext.asStateFlow()
+
+    val sightListForQuery : StateFlow<List<DefaultSight>> = searchtext
+        .combine(_defaultSightList) {text, sightList ->
+            if(text.isBlank()) {
+                emptyList()
+            } else {
+                sightList.filter {
+                    it.doesNatchSearchQuery(text)
+                }
+            }
+        }.stateIn(
+            viewModelScope,
+            SharingStarted.WhileSubscribed(2000),
+            _defaultSightList.value
+        )
+    fun onSearchTextChange(text: String) {
+        _searchtext.value = text
+    }
+
+    fun setIsSearching (boolean: Boolean) {
+        _isSearching.value = boolean
+    }
+
+    private var _cameraPosition = MutableStateFlow(CameraPosition.fromLatLngZoom(LatLng(sightList.value[0].latitude,sightList.value[0].longitude), 14f))
+    var cameraPosition = _cameraPosition.asStateFlow()
+
+    private val viewModelCoroutineScope = CoroutineScope(viewModelScope.coroutineContext)
+    fun moveCameraPosition (cameraPositionState: CameraPositionState, latLng: LatLng) {
+        viewModelCoroutineScope.launch {
+            cameraPositionState.animate(
+                CameraUpdateFactory.newCameraPosition(
+                    CameraPosition.fromLatLngZoom(
+                        latLng,
+                        cameraPositionState.position.zoom
+                    )
+                ), 500
+            )
+            _cameraPosition.value = cameraPositionState.position
+        }
     }
 
 

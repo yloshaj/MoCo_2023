@@ -59,6 +59,7 @@ import androidx.compose.ui.unit.sp
 import com.group16.mytrips.R
 import com.group16.mytrips.data.Sight
 import com.group16.mytrips.viewModel.ApplicationViewModel
+import com.group16.mytrips.viewModel.ProfileViewModel
 import kotlin.math.roundToInt
 
 
@@ -67,7 +68,7 @@ import kotlin.math.roundToInt
 
 
 @Composable
-fun SightScreen (sightId: String?, applicationViewModel: ApplicationViewModel) {
+fun SightScreen (sightId: String?, applicationViewModel: ProfileViewModel) {
     val sights = applicationViewModel.sightList.collectAsState()
     var currentSight by remember {
         mutableStateOf(Sight(-1,R.drawable.ic_dummylocationpic,R.drawable.ic_dummylocationpic, sightName = "", date = "", latitude = 0.0, longitude = 0.0))
@@ -93,7 +94,7 @@ fun SightScreen (sightId: String?, applicationViewModel: ApplicationViewModel) {
 
 }
 @Composable
-fun ProfileScreen (applicationViewModel: ApplicationViewModel, onItemClicked: (sightId: String) -> Unit) {
+fun ProfileScreen (applicationViewModel: ProfileViewModel, onItemClicked: (sightId: String) -> Unit) {
     val sights = applicationViewModel.sightList.collectAsState()
 
 
@@ -118,7 +119,7 @@ fun ProfilePic(modifier: Modifier, id: Int) {
 
 }
 @Composable
-fun ProfileHeader (applicationViewModel: ApplicationViewModel) {
+fun ProfileHeader (applicationViewModel: ProfileViewModel) {
     val avatarList = applicationViewModel.avatar.collectAsState()
     val xp by applicationViewModel.xp.collectAsState()
     val pic = avatarList.value[0]
@@ -207,7 +208,7 @@ fun SightGrid (list: State<MutableList<Sight>>, onItemClicked: (userId: String) 
 
         LazyVerticalGrid(
             columns = GridCells.Fixed(2),
-            contentPadding = PaddingValues(10.dp)
+            contentPadding = PaddingValues(10.dp), modifier = Modifier.background(Color.White)
         ) {
             items(list.value.size) { it ->
                 SightCard(
@@ -278,7 +279,7 @@ fun SightCard (sight: Sight, onItemClicked: (sightId: String) -> Unit) {
 
 //@Preview(showBackground = true)
 @Composable
-fun PreviewHeader(onItemClicked: (sightId: String) -> Unit, applicationViewModel: ApplicationViewModel) {
+fun PreviewHeader(onItemClicked: (sightId: String) -> Unit, applicationViewModel: ProfileViewModel) {
     var xp by remember {
         mutableStateOf(670)
     }

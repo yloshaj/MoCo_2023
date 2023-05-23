@@ -56,6 +56,7 @@ import com.group16.mytrips.data.CameraUIAction
 import com.group16.mytrips.data.getCameraProvider
 import com.group16.mytrips.data.getOutputDirectory
 import com.group16.mytrips.data.takePicture
+import com.group16.mytrips.screens.LaunchPermission
 
 @Composable
 fun CameraView(
@@ -64,26 +65,9 @@ fun CameraView(
         handleImageCapture(uri)
     }, onError: (ImageCaptureException) -> Unit = {
         Log.e("ja", "Zeige Fehler", it)
-    }, requestPermission:(String,String,ActivityResultLauncher<String>) -> Unit, permissionLauncher: ActivityResultLauncher<String>
-) {
-    var openDialog by remember { mutableStateOf(true) }
-    val cameraPermission = android.Manifest.permission.CAMERA
-    val tag = "Kamera"
-    if(openDialog && (ContextCompat.checkSelfPermission(LocalContext.current,cameraPermission)!=PackageManager.PERMISSION_GRANTED)) {
-        AlertDialog(
-            onDismissRequest = { openDialog = false }, title = { Text(text = tag) },
-            text = { Text(text = "Um Bilder zu machen") },
-            confirmButton = {
-                Button(onClick = { requestPermission (cameraPermission, tag, permissionLauncher)
-                    openDialog = false
-                }) {
-                    Text(text = "Ok")
-                }
-            }, dismissButton = { Button(onClick = { openDialog = false}) {
-                Text(text = "Nein")
-            }}
-        )
     }
+) {
+    LaunchPermission(permission = android.Manifest.permission.CAMERA, permissionTitle = "Kamera", rationale = "Um Bilder zu machen, brauchen wir die Kamera!")
 
     val context = LocalContext.current
     var lensFacing by remember { mutableStateOf(CameraSelector.LENS_FACING_BACK) }
