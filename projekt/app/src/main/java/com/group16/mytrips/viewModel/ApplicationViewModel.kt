@@ -125,7 +125,11 @@ class ApplicationViewModel(application: Application) : AndroidViewModel(applicat
         }
     }
 
-
+    fun getCameraPositionState() : CameraPositionState {
+        val loc = getLocationLiveData()
+        return if (loc.value != null) CameraPositionState(CameraPosition(LatLng(loc.value!!.latitude, loc.value!!.longitude),14f,0f,0f))
+        else CameraPositionState(CameraPosition(LatLng(defaultSightList.value[0].latitude, defaultSightList.value[0].longitude),14f,0f,0f))
+    }
 
 
 }

@@ -1,6 +1,7 @@
 package com.group16.mytrips.screens
 
 import android.Manifest
+import android.util.Log
 import androidx.activity.result.ActivityResultLauncher
 import androidx.compose.animation.AnimatedVisibility
 import androidx.compose.foundation.Image
@@ -47,6 +48,7 @@ import androidx.compose.ui.unit.dp
 import com.group16.mytrips.R
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.livedata.observeAsState
+import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.draw.alpha
@@ -55,12 +57,14 @@ import androidx.compose.ui.input.pointer.pointerInput
 import androidx.compose.ui.platform.LocalFocusManager
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.sp
+import com.google.android.gms.maps.CameraUpdateFactory
 import com.google.android.gms.maps.model.CameraPosition
 import com.google.android.gms.maps.model.LatLng
 import com.google.maps.android.compose.CameraPositionState
 import com.google.maps.android.compose.rememberCameraPositionState
 import com.group16.mytrips.data.DefaultSight
 import com.group16.mytrips.viewModel.ApplicationViewModel
+import kotlinx.coroutines.launch
 import kotlin.math.roundToInt
 
 
@@ -70,20 +74,37 @@ fun NavigationScreen(
     applicationViewModel: ApplicationViewModel,
     navigate: () -> Unit
 ) {
+    val loc = applicationViewModel.getLocationLiveData().observeAsState()
+    var sightList = applicationViewModel.getSortedList().collectAsState()
+    var cameraPosition = applicationViewModel.getCameraPositionState()
+    /*
+    var cameraPosition = rememberCameraPositionState {
+        if (loc.value != null) {
+            position = CameraPosition.fromLatLngZoom(
+                LatLng(loc.value!!.latitude, loc.value!!.longitude),
+                14f
+            )
+        } else {
+            position = CameraPosition.fromLatLngZoom(
+                LatLng(
+                    sightList.value[0].latitude,
+                    sightList.value[0].longitude
+                ), 14f
+            )
+        }
+
+    }
+
+     */
+
     LaunchPermission(
         permission = Manifest.permission.ACCESS_FINE_LOCATION,
         permissionTitle = "Location",
         rationale = "Location needed for navigation",
         navigate = navigate
     )
-    val loc = applicationViewModel.getLocationLiveData().observeAsState()
-    var sightList = applicationViewModel.getSortedList().collectAsState()
-    var cameraPosition = rememberCameraPositionState {
-        if (loc.value != null)
-            position = CameraPosition.fromLatLngZoom(LatLng(loc.value!!.latitude, loc.value!!.longitude), 14f)
-        else
-            position = CameraPosition.fromLatLngZoom(LatLng(sightList.value[0].latitude, sightList.value[0].longitude), 14f)
-    }
+
+
 
 
 
@@ -96,7 +117,7 @@ fun NavigationScreen(
             MapsSDK(
                 modifier = Modifier
                     .fillMaxWidth()
-                    .weight(0.6f), sightList, cameraPosition,loc, applicationViewModel
+                    .weight(0.6f), sightList, cameraPosition, loc, applicationViewModel
             )
             Box(modifier = Modifier.weight(0.4f)) {
 
@@ -187,16 +208,21 @@ fun SearchBar(appViewModel: ApplicationViewModel) {
             }
         }
         AnimatedVisibility(visible = isSearching && sightListForQuery.isNotEmpty()) {
-            Box(modifier = Modifier
-                .fillMaxWidth()
-                .heightIn(0.dp, 220.dp)
-                .padding(18.dp, 0.dp)
-                .background(color = Color.White)) {
-            //(modifier = Modifier.fillMaxWidth().heightIn(0.dp,220.dp).padding(18.dp, 0.dp), shape = ShapeDefaults.ExtraSmall, colors = CardDefaults.cardColors(Color.LightGray)) {
+            Box(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .heightIn(0.dp, 220.dp)
+                    .padding(18.dp, 0.dp)
+                    .background(color = Color.White)
+            ) {
+                //(modifier = Modifier.fillMaxWidth().heightIn(0.dp,220.dp).padding(18.dp, 0.dp), shape = ShapeDefaults.ExtraSmall, colors = CardDefaults.cardColors(Color.LightGray)) {
                 LazyColumn(modifier = Modifier.fillMaxWidth()) {
                     items(sightListForQuery.size) {
                         Card() {
-                            Text(text = sightListForQuery[it].sightName, modifier = Modifier.heightIn(20.dp),)
+                            Text(
+                                text = sightListForQuery[it].sightName,
+                                modifier = Modifier.heightIn(20.dp),
+                            )
                         }
 
                     }
@@ -251,7 +277,11 @@ fun LocationCard(
         shape = ShapeDefaults.ExtraSmall,
         elevation = CardDefaults.cardElevation(2.dp)
     ) {
-        Column(horizontalAlignment = Alignment.CenterHorizontally, verticalArrangement = Arrangement.Center, modifier = Modifier.fillMaxHeight()) {
+        Column(
+            horizontalAlignment = Alignment.CenterHorizontally,
+            verticalArrangement = Arrangement.Center,
+            modifier = Modifier.fillMaxHeight()
+        ) {
             Row(
                 verticalAlignment = Alignment.CenterVertically,
                 horizontalArrangement = Arrangement.SpaceEvenly,
@@ -278,7 +308,7 @@ fun LocationCard(
                     Text(text = adjustedDistance, fontSize = 14.sp)
                 }
 
-                 Icon(
+                Icon(
                     painter = painterResource(id = sight.pictureThumbnail),
                     contentDescription = "Default Picture of Sight",
                     tint = Color.Unspecified,

@@ -63,23 +63,30 @@ import com.group16.mytrips.viewModel.ProfileViewModel
 import kotlin.math.roundToInt
 
 
-
-
-
-
 @Composable
-fun SightScreen (sightId: String?, applicationViewModel: ProfileViewModel) {
+fun SightScreen(sightId: String?, applicationViewModel: ProfileViewModel) {
     val sights = applicationViewModel.sightList.collectAsState()
     var currentSight by remember {
-        mutableStateOf(Sight(-1,R.drawable.ic_dummylocationpic,R.drawable.ic_dummylocationpic, sightName = "", date = "", latitude = 0.0, longitude = 0.0))
+        mutableStateOf(
+            Sight(
+                -1,
+                R.drawable.ic_dummylocationpic,
+                R.drawable.ic_dummylocationpic,
+                sightName = "",
+                date = "",
+                latitude = 0.0,
+                longitude = 0.0
+            )
+        )
     }
     if (sightId != null) {
         for (sight in sights.value) if (sightId == sight.sightId.toString()) currentSight = sight
     }
-    Box (
+    Box(
         Modifier
             .fillMaxSize()
-            .background(Color.Black)) {
+            .background(Color.Black)
+    ) {
         Icon(
             painter = painterResource(id = currentSight.picture),
             contentDescription = null,
@@ -93,8 +100,12 @@ fun SightScreen (sightId: String?, applicationViewModel: ProfileViewModel) {
     }
 
 }
+
 @Composable
-fun ProfileScreen (applicationViewModel: ProfileViewModel, onItemClicked: (sightId: String) -> Unit) {
+fun ProfileScreen(
+    applicationViewModel: ProfileViewModel,
+    onItemClicked: (sightId: String) -> Unit
+) {
     val sights = applicationViewModel.sightList.collectAsState()
 
 
@@ -103,27 +114,30 @@ fun ProfileScreen (applicationViewModel: ProfileViewModel, onItemClicked: (sight
         SightGrid(list = sights, onItemClicked)
     }
 }
+
 @Composable
 fun ProfilePic(modifier: Modifier, id: Int) {
     Surface(shape = CircleShape, shadowElevation = 10.dp) {
         val image = ImageVector.vectorResource(id = id)
 
-        Image(imageVector = image,
+        Image(
+            imageVector = image,
             contentDescription = null,
             contentScale = ContentScale.Crop,
             modifier = modifier.size(90.dp),
 
 
-        )
+            )
     }
 
 }
+
 @Composable
-fun ProfileHeader (applicationViewModel: ProfileViewModel) {
+fun ProfileHeader(applicationViewModel: ProfileViewModel) {
     val avatarList = applicationViewModel.avatar.collectAsState()
     val xp by applicationViewModel.xp.collectAsState()
     val pic = avatarList.value[0]
-    var expanded  by remember {
+    var expanded by remember {
         mutableStateOf(false)
     }
 
@@ -141,7 +155,11 @@ fun ProfileHeader (applicationViewModel: ProfileViewModel) {
 
                 modifier = Modifier.fillMaxWidth()
             ) {
-                Text(text = "Max Mustermann", fontSize = 30.sp, modifier = Modifier.padding(0.dp, 8.dp))
+                Text(
+                    text = "Max Mustermann",
+                    fontSize = 30.sp,
+                    modifier = Modifier.padding(0.dp, 8.dp)
+                )
                 Row(
                     horizontalArrangement = Arrangement.SpaceEvenly,
                     verticalAlignment = Alignment.CenterVertically,
@@ -149,29 +167,34 @@ fun ProfileHeader (applicationViewModel: ProfileViewModel) {
                 ) {
                     ProfilePic(modifier = Modifier
                         .padding(0.dp)
-                        .clickable { expanded = !expanded }, id = profileId)
+                        .clickable { expanded = !expanded }, id = profileId
+                    )
 
                     LevelBar(overAllXP = xp)
                 }
                 AnimatedVisibility(visible = expanded) {
-                    ProfileSelection1 ({ value ->
+                    ProfileSelection1({ value ->
                         profileId = value
                         expanded = !expanded
                     }, avatarList)
                 }
 
             }
-            Text(text = "Gefundene Locations:", fontSize = 20.sp, modifier = Modifier.padding(10.dp, 8.dp))
+            Text(
+                text = "Gefundene Locations:",
+                fontSize = 20.sp,
+                modifier = Modifier.padding(10.dp, 8.dp)
+            )
         }
     }
 }
 
 
 @Composable
-fun LevelBar (overAllXP: Int) {
-    val level = overAllXP/100f
+fun LevelBar(overAllXP: Int) {
+    val level = overAllXP / 100f
     val discreteLevel = level.toInt()
-    val percentage = ((level-discreteLevel) * 100).roundToInt() / 100f
+    val percentage = ((level - discreteLevel) * 100).roundToInt() / 100f
     Column(horizontalAlignment = Alignment.CenterHorizontally) {
         Row(
             horizontalArrangement = Arrangement.spacedBy(12.dp),
@@ -208,7 +231,7 @@ fun SightGrid (list: State<MutableList<Sight>>, onItemClicked: (userId: String) 
 
         LazyVerticalGrid(
             columns = GridCells.Fixed(2),
-            contentPadding = PaddingValues(10.dp), modifier = Modifier.background(Color.White)
+            contentPadding = PaddingValues(10.dp)
         ) {
             items(list.value.size) { it ->
                 SightCard(
@@ -222,23 +245,30 @@ fun SightGrid (list: State<MutableList<Sight>>, onItemClicked: (userId: String) 
 
 
 @Composable
-fun SightCard (sight: Sight, onItemClicked: (sightId: String) -> Unit) {
-    Card(modifier = Modifier
-        .widthIn(0.dp, 156.dp)
-        .padding(13.dp, 8.dp)
-        .clickable { onItemClicked(sight.sightId.toString()) },
+fun SightCard(sight: Sight, onItemClicked: (sightId: String) -> Unit) {
+    Card(
+        modifier = Modifier
+            .widthIn(0.dp, 156.dp)
+            .padding(13.dp, 8.dp)
+            .clickable { onItemClicked(sight.sightId.toString()) },
         elevation = CardDefaults.cardElevation(4.dp),
         colors = CardDefaults.cardColors(Color.White),
         shape = ShapeDefaults.ExtraSmall
     ) {
-        Column(modifier = Modifier.padding(4.dp,2.dp)) {
-            Box(modifier = Modifier.size(156.dp, 118.dp).padding(0.dp, 0.dp)) {Icon(
-                painterResource(id = sight.pictureThumbnail),
-                contentDescription = null,
-                tint = Color.Unspecified,
-                modifier = Modifier.fillMaxSize()
+        Column(modifier = Modifier.padding(4.dp, 2.dp)) {
+            Box(
+                modifier = Modifier
+                    .size(156.dp, 118.dp)
+                    .padding(0.dp, 0.dp)
+            ) {
+                Icon(
+                    painterResource(id = sight.pictureThumbnail),
+                    contentDescription = null,
+                    tint = Color.Unspecified,
+                    modifier = Modifier.fillMaxSize()
 
-            )}
+                )
+            }
             /*
             Image(painterResource(id = sight.pictureThumbnail),
                 contentDescription = null, modifier = Modifier
@@ -279,7 +309,10 @@ fun SightCard (sight: Sight, onItemClicked: (sightId: String) -> Unit) {
 
 //@Preview(showBackground = true)
 @Composable
-fun PreviewHeader(onItemClicked: (sightId: String) -> Unit, applicationViewModel: ProfileViewModel) {
+fun PreviewHeader(
+    onItemClicked: (sightId: String) -> Unit,
+    applicationViewModel: ProfileViewModel
+) {
     var xp by remember {
         mutableStateOf(670)
     }
@@ -287,7 +320,6 @@ fun PreviewHeader(onItemClicked: (sightId: String) -> Unit, applicationViewModel
     //ProfileHeader(profilbild = painterResource(id = R.drawable.ic_dummyprofilepic), name = "Max Mustermann", overAllXP = xp)
     ProfileScreen(applicationViewModel, onItemClicked)
 }
-
 
 
 @Preview(showBackground = true)
@@ -300,12 +332,13 @@ fun ActualPreview() {
 
 
 @Composable
-fun ProfileSelection1 (onClick: (id: Int) -> Unit, avatarList: State<List<Int>>){
+fun ProfileSelection1(onClick: (id: Int) -> Unit, avatarList: State<List<Int>>) {
 
-    Column(modifier = Modifier
-        .fillMaxWidth()
-        .height(120.dp)
-         ) {
+    Column(
+        modifier = Modifier
+            .fillMaxWidth()
+            .height(120.dp)
+    ) {
         val gridModifier = Modifier
             .weight(1f)
             .padding(0.dp, 10.dp)
@@ -316,16 +349,22 @@ fun ProfileSelection1 (onClick: (id: Int) -> Unit, avatarList: State<List<Int>>)
 }
 
 @Composable
-fun TierGrid (modifier: Modifier, onClick: (id: Int) -> Unit, avatarList: State<List<Int>>){
+fun TierGrid(modifier: Modifier, onClick: (id: Int) -> Unit, avatarList: State<List<Int>>) {
 
-    Card(modifier = modifier, elevation = CardDefaults.cardElevation(5.dp),
-        colors = CardDefaults.cardColors(containerColor = Color.White), shape = RectangleShape) {
+    Card(
+        modifier = modifier, elevation = CardDefaults.cardElevation(5.dp),
+        colors = CardDefaults.cardColors(containerColor = Color.White), shape = RectangleShape
+    ) {
         //Icon(imageVector = Icons.Rounded.Close, contentDescription = null, Modifier.alpha(0.6f).padding(4.dp))
 
         Row(verticalAlignment = Alignment.CenterVertically) {
-            Icon(imageVector = Icons.Rounded.ArrowDropDown, contentDescription = null, modifier = Modifier
-                .weight(0.1f)
-                .rotate(90f))
+            Icon(
+                imageVector = Icons.Rounded.ArrowDropDown,
+                contentDescription = null,
+                modifier = Modifier
+                    .weight(0.1f)
+                    .rotate(90f)
+            )
             LazyHorizontalGrid(
                 modifier = Modifier.weight(1f),
                 rows = GridCells.Fixed(1), contentPadding = PaddingValues(10.dp),
@@ -344,9 +383,12 @@ fun TierGrid (modifier: Modifier, onClick: (id: Int) -> Unit, avatarList: State<
                     )
                 }
             }
-            Icon(imageVector = Icons.Rounded.ArrowDropDown, contentDescription = null, modifier = Modifier
-                .weight(0.1f)
-                .rotate(-90f)
+            Icon(
+                imageVector = Icons.Rounded.ArrowDropDown,
+                contentDescription = null,
+                modifier = Modifier
+                    .weight(0.1f)
+                    .rotate(-90f)
             )
         }
         //SlideCard(onClick = onClick)
