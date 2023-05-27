@@ -41,84 +41,67 @@ import com.group16.mytrips.viewModel.ProfileViewModel
 class MainActivity : ComponentActivity() {
 
 
-
-        private val requestPermissionLauncher = registerForActivityResult(
-            ActivityResultContracts.RequestPermission()
-        ) { isGranted ->
-            if (isGranted) Log.i("ja", "Wurde erlaubt")
-            else Log.i("ja", "Nicht erlaubt")
-        }
-
-        @SuppressLint("UnusedMaterial3ScaffoldPaddingParameter")
-        @OptIn(ExperimentalMaterial3Api::class)
-        override fun onCreate(savedInstanceState: Bundle?) {
-            super.onCreate(savedInstanceState)
-            setContent {
-                val profileViewModel = ProfileViewModel()
-                val cameraViewModel = CameraViewModel(this.application)
-                val appViewModel = ApplicationViewModel(this.application)
+    @SuppressLint("UnusedMaterial3ScaffoldPaddingParameter")
+    @OptIn(ExperimentalMaterial3Api::class)
+    override fun onCreate(savedInstanceState: Bundle?) {
+        super.onCreate(savedInstanceState)
+        setContent {
+            val profileViewModel = ProfileViewModel()
+            val cameraViewModel = CameraViewModel(this.application)
+            val appViewModel = ApplicationViewModel(this.application)
 
 
-                MyTripsTheme {
-                    val navController = rememberNavController()
-                    Scaffold(
-                        bottomBar = {
-                            BottomNavigationBar(
-                                items = listOf(
-                                    BottomNavigationItem(
-                                        name = "Navigation",
-                                        route = NavigationRoute.NavigationScreen.route,
-                                        icon = Icons.Rounded.Place),
-                                    BottomNavigationItem(
-                                        name = "Profil",
-                                        route = NavigationRoute.ProfileScreen.route,
-                                        icon = Icons.Rounded.Person),
-                                    BottomNavigationItem(
-                                        name = "Kamera",
-                                        route = NavigationRoute.CameraScreen.route,
-                                        icon = ImageVector.vectorResource(id = R.drawable.ic_photo_camera))
+            MyTripsTheme {
+                val navController = rememberNavController()
+                Scaffold(
+                    bottomBar = {
+                        BottomNavigationBar(
+                            items = listOf(
+                                BottomNavigationItem(
+                                    name = "Navigation",
+                                    route = NavigationRoute.NavigationScreen.route,
+                                    icon = Icons.Rounded.Place
                                 ),
-                                navController = navController,
-                                onItemClick = {
-                                    navController.navigate(it.route) {
-                                        popUpTo(NavigationRoute.ProfileScreen.route)
-                                    }
-                                })
-                        }
-                    ) {
-                        innerPadding ->
-                        Box(modifier = Modifier
-                            .padding(PaddingValues(0.dp,0.dp,0.dp,innerPadding.calculateBottomPadding()))) {
-                            Navigation(navController = navController, appViewModel, profileViewModel)
-                        }
+                                BottomNavigationItem(
+                                    name = "Profil",
+                                    route = NavigationRoute.ProfileScreen.route,
+                                    icon = Icons.Rounded.Person
+                                ),
+                                BottomNavigationItem(
+                                    name = "Kamera",
+                                    route = NavigationRoute.CameraScreen.route,
+                                    icon = ImageVector.vectorResource(id = R.drawable.ic_photo_camera)
+                                )
+                            ),
+                            navController = navController,
+                            onItemClick = {
+                                navController.navigate(it.route) {
+                                    popUpTo(NavigationRoute.ProfileScreen.route)
+                                }
+                            })
                     }
-
+                ) { innerPadding ->
+                    Box(
+                        modifier = Modifier
+                            .padding(
+                                PaddingValues(
+                                    0.dp,
+                                    0.dp,
+                                    0.dp,
+                                    innerPadding.calculateBottomPadding()
+                                )
+                            )
+                    ) {
+                        Navigation(navController = navController, appViewModel, profileViewModel,cameraViewModel)
+                    }
                 }
 
             }
 
         }
 
-    private fun requestPermission(permission: String, title: String, activityResult: ActivityResultLauncher<String>) {
-        when {
-            ContextCompat.checkSelfPermission(
-                this,
-                permission
-            )
-                    == PackageManager.PERMISSION_GRANTED -> {
-                Log.i("ja", "$title zugriff bereits erlaubt")
-                //shouldShowCamera.value = true
-            }
-
-            ActivityCompat.shouldShowRequestPermissionRationale(
-                this,
-                permission
-            )
-            -> Log.i("ja", "Zeige $title Permission Text")
-
-            else -> activityResult.launch(permission)
-        }
     }
+
 
 }
 

@@ -7,6 +7,7 @@ import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import com.example.articlecamera.Cam.CameraView
 import com.group16.mytrips.viewModel.ApplicationViewModel
+import com.group16.mytrips.viewModel.CameraViewModel
 import com.group16.mytrips.viewModel.ProfileViewModel
 
 sealed class NavigationRoute {
@@ -37,7 +38,8 @@ sealed class NavigationRoute {
 fun Navigation(
     navController: NavHostController,
     appViewModel: ApplicationViewModel,
-    profileViewModel: ProfileViewModel
+    profileViewModel: ProfileViewModel,
+    cameraViewModel: CameraViewModel
 
 ) {
     NavHost(navController = navController, startDestination = NavigationRoute.ProfileScreen.route) {
@@ -56,7 +58,7 @@ fun Navigation(
             }
         }
         composable(NavigationRoute.CameraScreen.route) {
-            CameraView()
+            CameraView(cameraViewModel)
         }
         composable(NavigationRoute.DetailedSightScreen.route + "/ {sightId}") { navBackStackEntry ->
             SightScreen(navBackStackEntry.arguments?.getString("sightId"), profileViewModel)

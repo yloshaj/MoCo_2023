@@ -36,7 +36,9 @@ import androidx.compose.material3.IconButton
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.livedata.observeAsState
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
@@ -44,10 +46,12 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.vector.ImageVector
+import androidx.compose.ui.modifier.modifierLocalConsumer
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.LocalLifecycleOwner
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
+import androidx.compose.ui.unit.sp
 import androidx.compose.ui.viewinterop.AndroidView
 import androidx.core.content.ContextCompat
 import com.group16.mytrips.R
@@ -57,9 +61,11 @@ import com.group16.mytrips.data.getCameraProvider
 import com.group16.mytrips.data.getOutputDirectory
 import com.group16.mytrips.data.takePicture
 import com.group16.mytrips.screens.LaunchPermission
+import com.group16.mytrips.viewModel.ApplicationViewModel
+import com.group16.mytrips.viewModel.CameraViewModel
 
 @Composable
-fun CameraView(
+fun CameraView(viewModel: CameraViewModel,
     onImageCaptured: (Uri, Boolean) -> Unit = { uri, fromGallery ->
         Log.d(ContentValues.TAG, "Image Uri Captured from Camera View")
         handleImageCapture(uri)
@@ -81,6 +87,7 @@ fun CameraView(
     }
 
     CameraPreviewView(
+        viewModel,
         imageCapture,
         lensFacing
     ) { cameraUIAction ->
@@ -106,14 +113,15 @@ fun CameraView(
 }
 
 
-@SuppressLint("RestrictedApi")
+
 @Composable
-private fun CameraPreviewView(
+private fun CameraPreviewView(viewModel: CameraViewModel,
     imageCapture: ImageCapture,
     lensFacing: Int = CameraSelector.LENS_FACING_BACK,
     cameraUIAction: (CameraUIAction) -> Unit
 ) {
 
+    val locState = viewModel.getSortedList().collectAsState()
     val context = LocalContext.current
     val lifecycleOwner = LocalLifecycleOwner.current
 
@@ -139,6 +147,22 @@ private fun CameraPreviewView(
         AndroidView({ previewView }, modifier = Modifier.fillMaxSize()) {
 
         }
+        Column(modifier = Modifier.align(Alignment.TopCenter)) {
+            Row(modifier = Modifier
+                .fillMaxWidth()
+                .background(Color.Black)
+                .padding(5.dp),
+                horizontalArrangement = Arrangement.SpaceBetween,
+                verticalAlignment = Alignment.CenterVertically){
+                Text(
+                    text = locState.value[0].sightName,
+                    color = Color.White,
+                    fontSize = 24.sp,
+                    modifier = Modifier.padding(8.dp)
+                )
+            }
+        }
+
         Column(
             modifier = Modifier.align(Alignment.BottomCenter),
             verticalArrangement = Arrangement.Bottom
@@ -159,11 +183,12 @@ fun CameraControls(cameraUIAction: (CameraUIAction) -> Unit) {
         verticalAlignment = Alignment.CenterVertically
     ) {
 
+
         CameraControl(
-            Icons.Sharp.FlipCameraAndroid,
-            R.string.icn_camera_view_switch_camera_content_description,
-            modifier = Modifier.size(64.dp),
-            onClick = { cameraUIAction(CameraUIAction.OnSwitchCameraClick) }
+            Icons.Sharp.PhotoLibrary,
+            R.string.icn_camera_view_view_gallery_content_description,
+            modifier = Modifier.size(44.dp),
+            onClick = { cameraUIAction(CameraUIAction.OnGalleryViewClick) }
         )
 
         CameraControl(
@@ -177,10 +202,10 @@ fun CameraControls(cameraUIAction: (CameraUIAction) -> Unit) {
         )
 
         CameraControl(
-            Icons.Sharp.PhotoLibrary,
-            R.string.icn_camera_view_view_gallery_content_description,
-            modifier = Modifier.size(64.dp),
-            onClick = { cameraUIAction(CameraUIAction.OnGalleryViewClick) }
+            Icons.Sharp.FlipCameraAndroid,
+            R.string.icn_camera_view_switch_camera_content_description,
+            modifier = Modifier.size(44.dp),
+            onClick = { cameraUIAction(CameraUIAction.OnSwitchCameraClick) }
         )
 
     }
