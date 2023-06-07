@@ -11,9 +11,11 @@ class ModelClass {
 
     val listOfAvatars = listOf(R.drawable.ic_av_cherry2,R.drawable.ic_av_fries,
         R.drawable.ic_av_ironman,R.drawable.ic_av_mickey,R.drawable.ic_av_naruto,
-        R.drawable.ic_av_pikachu,R.drawable.ic_av_strawberry,R.drawable.ic_av_taco,
-        R.drawable.ic_dummyprofilepic, R.drawable.ic_dummylocationpic
+        R.drawable.ic_av_pikachu,R.drawable.ic_av_strawberry,R.drawable.ic_av_taco
     )
+
+    val defaultSight = DefaultSightFB(latitude = 51.0244537, longitude = 7.5645057)
+
 
     init {
         defaultSightList.add(

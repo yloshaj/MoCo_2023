@@ -7,8 +7,10 @@ import androidx.lifecycle.viewModelScope
 import com.google.android.gms.maps.CameraUpdateFactory
 import com.google.android.gms.maps.model.CameraPosition
 import com.google.android.gms.maps.model.LatLng
+import com.google.firebase.firestore.FirebaseFirestore
+import com.google.firebase.firestore.ListenerRegistration
 import com.google.maps.android.compose.CameraPositionState
-import com.group16.mytrips.data.DefaultSight
+import com.group16.mytrips.data.DefaultSightFB
 import com.group16.mytrips.data.LocationLiveData
 import com.group16.mytrips.data.ModelClass
 import kotlinx.coroutines.CoroutineScope
@@ -17,36 +19,47 @@ import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.combine
-import kotlinx.coroutines.flow.forEach
 import kotlinx.coroutines.flow.stateIn
 import kotlinx.coroutines.launch
 import kotlin.math.roundToInt
 
-class ApplicationViewModel(application: Application) : AndroidViewModel(application) {
+class NavigationViewModel(application: Application) : AndroidViewModel(application) {
 
     private val locationLiveData = LocationLiveData(application)
     private val modelClass = ModelClass()
 
-    private var _defaultSightList = MutableStateFlow(modelClass.defaultSightList)
+
+    private val firestore = FirebaseFirestore.getInstance()
+    private val collectionRef = firestore.collection("DefaultSightFB")
+
+    private val _defaultSightList = MutableStateFlow<MutableList<DefaultSightFB>>(emptyList<DefaultSightFB>().toMutableList())
     val defaultSightList = _defaultSightList.asStateFlow()
 
-    private var _sightList = MutableStateFlow(modelClass.sightList)
-    val sightList = _sightList.asStateFlow()
+    private lateinit var listenerRegistration: ListenerRegistration
 
-    private var _avatar = MutableStateFlow(modelClass.listOfAvatars)
-    val avatar = _avatar.asStateFlow()
+    fun startListeningForSightList() {
+        listenerRegistration = collectionRef.addSnapshotListener { snapshot, error ->
+            if (error != null) {
+                // Handle error
+                return@addSnapshotListener
+            }
 
-    private var _xp = MutableStateFlow(230)
-    val xp = _xp.asStateFlow()
+            val sights = snapshot?.documents?.mapNotNull { document ->
+                document.toObject(DefaultSightFB::class.java)
+            } ?: emptyList()
 
-    fun addXP (sightXP: Int) {
-        _xp.value += sightXP
+            _defaultSightList.value = sights.toMutableList()
+        }
     }
+
+    fun stopListeningForSightList() {
+        listenerRegistration.remove()
+    }
+
+
+
     fun getLocationLiveData() = locationLiveData
 
-    fun startLocationUpdates() {
-        locationLiveData.startLocationUpdates()
-    }
 
     private fun distanceInMeter(
         startLat: Double,
@@ -59,7 +72,8 @@ class ApplicationViewModel(application: Application) : AndroidViewModel(applicat
         return results[0].roundToInt()
     }
 
-    fun getSortedList(): StateFlow<MutableList<DefaultSight>> {
+
+    fun getSortedList(): StateFlow<MutableList<DefaultSightFB>> {
         val observedLocationData = getLocationLiveData()
         val list = _defaultSightList.asStateFlow()
         list.value.forEach {
@@ -74,7 +88,6 @@ class ApplicationViewModel(application: Application) : AndroidViewModel(applicat
                     it.longitude
                 )
         }
-        //list.value.sortedByDescending { it.distance }
         list.value.sortBy { it.distance }
         return list
     }
@@ -85,8 +98,12 @@ class ApplicationViewModel(application: Application) : AndroidViewModel(applicat
     private val _searchtext = MutableStateFlow("")
     val searchtext = _searchtext.asStateFlow()
 
-    val sightListForQuery : StateFlow<List<DefaultSight>> = searchtext
-        .combine(_defaultSightList) {text, sightList ->
+    fun onSearchTextChange(text: String) {
+        _searchtext.value = text
+    }
+
+    val sightListForQuery : StateFlow<List<DefaultSightFB>> = searchtext
+        .combine(_defaultSightList) { text, sightList ->
             if(text.isBlank()) {
                 emptyList()
             } else {
@@ -99,16 +116,14 @@ class ApplicationViewModel(application: Application) : AndroidViewModel(applicat
             SharingStarted.WhileSubscribed(2000),
             _defaultSightList.value
         )
-    fun onSearchTextChange(text: String) {
-        _searchtext.value = text
-    }
+
 
     fun setIsSearching (boolean: Boolean) {
         _isSearching.value = boolean
     }
 
-    private var _cameraPosition = MutableStateFlow(CameraPosition.fromLatLngZoom(LatLng(sightList.value[0].latitude,sightList.value[0].longitude), 14f))
-    var cameraPosition = _cameraPosition.asStateFlow()
+
+
 
     private val viewModelCoroutineScope = CoroutineScope(viewModelScope.coroutineContext)
     fun moveCameraPosition (cameraPositionState: CameraPositionState, latLng: LatLng) {
@@ -121,14 +136,13 @@ class ApplicationViewModel(application: Application) : AndroidViewModel(applicat
                     )
                 ), 500
             )
-            _cameraPosition.value = cameraPositionState.position
         }
     }
 
     fun getCameraPositionState() : CameraPositionState {
         val loc = getLocationLiveData()
         return if (loc.value != null) CameraPositionState(CameraPosition(LatLng(loc.value!!.latitude, loc.value!!.longitude),14f,0f,0f))
-        else CameraPositionState(CameraPosition(LatLng(defaultSightList.value[0].latitude, defaultSightList.value[0].longitude),14f,0f,0f))
+        else CameraPositionState(CameraPosition(LatLng(modelClass.defaultSight.latitude, modelClass.defaultSight.longitude),14f,0f,0f))
     }
 
 

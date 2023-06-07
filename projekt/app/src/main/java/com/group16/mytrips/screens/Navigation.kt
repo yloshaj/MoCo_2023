@@ -1,12 +1,11 @@
 package com.group16.mytrips.screens
 
-import androidx.activity.result.ActivityResultLauncher
 import androidx.compose.runtime.Composable
 import androidx.navigation.NavHostController
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import com.example.articlecamera.Cam.CameraView
-import com.group16.mytrips.viewModel.ApplicationViewModel
+import com.group16.mytrips.viewModel.NavigationViewModel
 import com.group16.mytrips.viewModel.CameraViewModel
 import com.group16.mytrips.viewModel.ProfileViewModel
 
@@ -37,7 +36,7 @@ sealed class NavigationRoute {
 @Composable
 fun Navigation(
     navController: NavHostController,
-    appViewModel: ApplicationViewModel,
+    appViewModel: NavigationViewModel,
     profileViewModel: ProfileViewModel,
     cameraViewModel: CameraViewModel
 

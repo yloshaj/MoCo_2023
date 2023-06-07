@@ -1,6 +1,7 @@
 package com.group16.mytrips.data
 
 import android.net.Uri
+import kotlinx.serialization.Serializable
 
 data class Sight(
     val sightId: Int,
@@ -24,7 +25,7 @@ data class DefaultSight(
 ) {
     fun doesNatchSearchQuery(query: String): Boolean {
         val matchingCombinations = listOf(
-            "$sightName",
+            sightName,
             "$latitude$longitude",
             "$latitude $longitude",
             "$latitude, $longitude"
@@ -32,3 +33,34 @@ data class DefaultSight(
         return matchingCombinations.any { it.contains(query, ignoreCase = true) }
     }
 }
+
+data class DefaultSightFB(
+    val sightId: Int = -1,
+    var defualtPicture: String? = null,
+    var thumbnail: String? = null,
+    val sightName: String = "",
+    val latitude: Double = -1.0,
+    val longitude: Double = -1.0,
+    var distance: Int? = null
+
+){
+    fun doesNatchSearchQuery(query: String): Boolean {
+        val matchingCombinations = listOf(
+            sightName,
+            "$latitude$longitude",
+            "$latitude $longitude",
+            "$latitude, $longitude"
+        )
+        return matchingCombinations.any { it.contains(query, ignoreCase = true) }
+    }
+}
+
+data class SightFB(
+    val sightId: Int = -1,
+    var picture: String? = null,
+    var thumbnail: String? = null,
+    val sightName: String = "",
+    val date: String = "01.01.1900",
+    val latitude: Double = -1.0,
+    val longitude: Double = -1.0,
+)

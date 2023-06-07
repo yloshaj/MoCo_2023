@@ -1,14 +1,10 @@
 package com.example.articlecamera.Cam
 
-import android.annotation.SuppressLint
 import android.content.ContentValues
-import android.content.pm.PackageManager
 import android.net.Uri
 import android.util.Log
 import androidx.activity.compose.rememberLauncherForActivityResult
-import androidx.activity.result.ActivityResultLauncher
 import androidx.activity.result.contract.ActivityResultContracts
-import androidx.camera.core.CameraControl
 import androidx.camera.core.CameraSelector
 import androidx.camera.core.ImageCapture
 import androidx.camera.core.ImageCaptureException
@@ -29,8 +25,6 @@ import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.sharp.FlipCameraAndroid
 import androidx.compose.material.icons.sharp.Lens
 import androidx.compose.material.icons.sharp.PhotoLibrary
-import androidx.compose.material3.AlertDialog
-import androidx.compose.material3.Button
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.Text
@@ -38,7 +32,6 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
-import androidx.compose.runtime.livedata.observeAsState
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
@@ -46,14 +39,12 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.vector.ImageVector
-import androidx.compose.ui.modifier.modifierLocalConsumer
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.LocalLifecycleOwner
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.compose.ui.viewinterop.AndroidView
-import androidx.core.content.ContextCompat
 import com.group16.mytrips.R
 
 import com.group16.mytrips.data.CameraUIAction
@@ -61,7 +52,6 @@ import com.group16.mytrips.data.getCameraProvider
 import com.group16.mytrips.data.getOutputDirectory
 import com.group16.mytrips.data.takePicture
 import com.group16.mytrips.screens.LaunchPermission
-import com.group16.mytrips.viewModel.ApplicationViewModel
 import com.group16.mytrips.viewModel.CameraViewModel
 
 @Composable

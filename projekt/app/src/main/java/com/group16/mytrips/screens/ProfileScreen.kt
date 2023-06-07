@@ -12,7 +12,6 @@ import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.PaddingValues
 
 import androidx.compose.foundation.layout.Row
-import androidx.compose.foundation.layout.fillMaxHeight
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
@@ -28,11 +27,13 @@ import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.rounded.ArrowDropDown
 import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
+import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.Icon
 import androidx.compose.material3.ShapeDefaults
 import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.State
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
@@ -42,11 +43,8 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.rotate
-import androidx.compose.ui.draw.scale
-import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.RectangleShape
-import androidx.compose.ui.graphics.painter.Painter
 import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.res.painterResource
@@ -56,22 +54,21 @@ import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import coil.compose.AsyncImage
+import coil.compose.SubcomposeAsyncImage
 import com.group16.mytrips.R
-import com.group16.mytrips.data.Sight
-import com.group16.mytrips.viewModel.ApplicationViewModel
+import com.group16.mytrips.data.SightFB
 import com.group16.mytrips.viewModel.ProfileViewModel
 import kotlin.math.roundToInt
 
 
 @Composable
-fun SightScreen(sightId: String?, applicationViewModel: ProfileViewModel) {
-    val sights = applicationViewModel.sightList.collectAsState()
+fun SightScreen(sightId: String?, profileViewModel: ProfileViewModel) {
+    val sights = profileViewModel.sightList.collectAsState()
     var currentSight by remember {
         mutableStateOf(
-            Sight(
+            SightFB(
                 -1,
-                R.drawable.ic_dummylocationpic,
-                R.drawable.ic_dummylocationpic,
                 sightName = "",
                 date = "",
                 latitude = 0.0,
@@ -87,12 +84,23 @@ fun SightScreen(sightId: String?, applicationViewModel: ProfileViewModel) {
             .fillMaxSize()
             .background(Color.Black)
     ) {
+        SubcomposeAsyncImage(
+            model = currentSight.picture,
+            contentDescription = null,
+            modifier = Modifier.fillMaxSize(), loading = {
+                CircularProgressIndicator(color = Color.LightGray, modifier = Modifier.size(10.dp,10.dp))
+            }
+
+        )
+        /*
         Icon(
             painter = painterResource(id = currentSight.picture),
             contentDescription = null,
             modifier = Modifier.fillMaxSize(),
             tint = Color.Unspecified
         )
+
+         */
         Column(verticalArrangement = Arrangement.Bottom, modifier = Modifier.fillMaxSize()) {
             Text(text = currentSight.sightName, fontSize = 30.sp, color = Color.White)
             Text(text = currentSight.date, color = Color.White)
@@ -103,14 +111,17 @@ fun SightScreen(sightId: String?, applicationViewModel: ProfileViewModel) {
 
 @Composable
 fun ProfileScreen(
-    applicationViewModel: ProfileViewModel,
+    profileViewModel: ProfileViewModel,
     onItemClicked: (sightId: String) -> Unit
 ) {
-    val sights = applicationViewModel.sightList.collectAsState()
-
-
+    val sights = profileViewModel.sightList.collectAsState()
+    Box(
+        modifier = Modifier
+            .fillMaxSize()
+            .background(Color.White)
+    )
     Column {
-        ProfileHeader(applicationViewModel)
+        ProfileHeader(profileViewModel)
         SightGrid(list = sights, onItemClicked)
     }
 }
@@ -133,17 +144,16 @@ fun ProfilePic(modifier: Modifier, id: Int) {
 }
 
 @Composable
-fun ProfileHeader(applicationViewModel: ProfileViewModel) {
-    val avatarList = applicationViewModel.avatar.collectAsState()
-    val xp by applicationViewModel.xp.collectAsState()
-    val pic = avatarList.value[0]
+fun ProfileHeader(profileViewModel: ProfileViewModel) {
+    val avatarList = profileViewModel.avatar.collectAsState()
+    val user by profileViewModel.user.collectAsState()
+
+
     var expanded by remember {
         mutableStateOf(false)
     }
 
-    var profileId by remember {
-        mutableStateOf(pic)
-    }
+    var profileId = user.avatar
     Card(
         elevation = CardDefaults.cardElevation(10.dp),
         colors = CardDefaults.cardColors(Color.White),
@@ -156,7 +166,7 @@ fun ProfileHeader(applicationViewModel: ProfileViewModel) {
                 modifier = Modifier.fillMaxWidth()
             ) {
                 Text(
-                    text = "Max Mustermann",
+                    text = user.name,
                     fontSize = 30.sp,
                     modifier = Modifier.padding(0.dp, 8.dp)
                 )
@@ -165,17 +175,19 @@ fun ProfileHeader(applicationViewModel: ProfileViewModel) {
                     verticalAlignment = Alignment.CenterVertically,
                     modifier = Modifier.fillMaxWidth()
                 ) {
-                    ProfilePic(modifier = Modifier
-                        .padding(0.dp)
-                        .clickable { expanded = !expanded }, id = profileId
+                    ProfilePic(
+                        modifier = Modifier
+                            .padding(0.dp)
+                            .clickable { expanded = !expanded }, id = profileId
                     )
 
-                    LevelBar(overAllXP = xp)
+                    LevelBar(overAllXP = user.overallxp)
                 }
                 AnimatedVisibility(visible = expanded) {
                     ProfileSelection1({ value ->
                         profileId = value
                         expanded = !expanded
+                        profileViewModel.updateAvatar(value)
                     }, avatarList)
                 }
 
@@ -227,25 +239,24 @@ fun LevelBar(overAllXP: Int) {
 }
 
 @Composable
-fun SightGrid (list: State<MutableList<Sight>>, onItemClicked: (userId: String) -> Unit) {
+fun SightGrid(list: State<List<SightFB>>, onItemClicked: (userId: String) -> Unit) {
 
-        LazyVerticalGrid(
-            columns = GridCells.Fixed(2),
-            contentPadding = PaddingValues(10.dp)
-        ) {
-            items(list.value.size) { it ->
-                SightCard(
-                    sight = list.value[it],
-                    onItemClicked = onItemClicked
-                )
-            }
+    LazyVerticalGrid(
+        columns = GridCells.Fixed(2),
+        contentPadding = PaddingValues(10.dp)
+    ) {
+        items(list.value.size) { it ->
+            SightCard(
+                sight = list.value[it],
+                onItemClicked = onItemClicked
+            )
         }
+    }
 }
 
 
-
 @Composable
-fun SightCard(sight: Sight, onItemClicked: (sightId: String) -> Unit) {
+fun SightCard(sight: SightFB, onItemClicked: (sightId: String) -> Unit) {
     Card(
         modifier = Modifier
             .widthIn(0.dp, 156.dp)
@@ -261,13 +272,17 @@ fun SightCard(sight: Sight, onItemClicked: (sightId: String) -> Unit) {
                     .size(156.dp, 118.dp)
                     .padding(0.dp, 0.dp)
             ) {
+                AsyncImage(model = sight.thumbnail, contentDescription =null, placeholder = painterResource(
+                    id = R.drawable.ic_dummylocationpic
+                ), modifier = Modifier.fillMaxSize())
+                /*
                 Icon(
                     painterResource(id = sight.pictureThumbnail),
                     contentDescription = null,
                     tint = Color.Unspecified,
                     modifier = Modifier.fillMaxSize()
 
-                )
+                )*/
             }
             /*
             Image(painterResource(id = sight.pictureThumbnail),
@@ -311,14 +326,16 @@ fun SightCard(sight: Sight, onItemClicked: (sightId: String) -> Unit) {
 @Composable
 fun PreviewHeader(
     onItemClicked: (sightId: String) -> Unit,
-    applicationViewModel: ProfileViewModel
+    profileViewModel: ProfileViewModel
 ) {
     var xp by remember {
         mutableStateOf(670)
     }
-
+    LaunchedEffect(Unit) {
+        profileViewModel.startListeningForData()
+    }
     //ProfileHeader(profilbild = painterResource(id = R.drawable.ic_dummyprofilepic), name = "Max Mustermann", overAllXP = xp)
-    ProfileScreen(applicationViewModel, onItemClicked)
+    ProfileScreen(profileViewModel, onItemClicked)
 }
 
 

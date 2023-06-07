@@ -12,22 +12,22 @@ import com.google.maps.android.compose.GoogleMap
 import com.google.maps.android.compose.Marker
 import com.google.maps.android.compose.MarkerState
 import com.google.maps.android.compose.rememberCameraPositionState
-import com.group16.mytrips.data.DefaultSight
 import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.runtime.livedata.observeAsState
 
 import androidx.compose.ui.unit.dp
 import com.google.maps.android.compose.MapProperties
+import com.group16.mytrips.data.DefaultSightFB
 import com.group16.mytrips.data.LocationDetails
-import com.group16.mytrips.viewModel.ApplicationViewModel
+import com.group16.mytrips.viewModel.NavigationViewModel
 
 
 @Composable
 fun MapsSDK(
     modifier: Modifier,
-    sightList: State<MutableList<DefaultSight>>,
+    sightList: State<MutableList<DefaultSightFB>>,
     cameraPosition: CameraPositionState, loc : State<LocationDetails?>,
-    appViewModel: ApplicationViewModel
+    appViewModel: NavigationViewModel
 ) {
 
 

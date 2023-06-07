@@ -1,0 +1,30 @@
+{
+  "project_info": {
+    "project_number": "224009072985",
+    "firebase_url": "https://mytrips-748f0-default-rtdb.europe-west1.firebasedatabase.app",
+    "project_id": "mytrips-748f0",
+    "storage_bucket": "mytrips-748f0.appspot.com"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:224009072985:android:c126a9ad3f28b212ce9c48",
+        "android_client_info": {
+          "package_name": "com.group16.mytrips"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyBSyLK2v8lh162kEQAX5JcJJfUnqFJxHsE"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}
