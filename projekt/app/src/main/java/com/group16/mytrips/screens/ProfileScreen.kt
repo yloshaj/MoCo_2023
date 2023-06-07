@@ -1,6 +1,7 @@
 package com.group16.mytrips.screens
 
 import androidx.compose.animation.AnimatedVisibility
+import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
@@ -16,6 +17,7 @@ import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.heightIn
+import androidx.compose.foundation.layout.offset
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.widthIn
@@ -88,19 +90,14 @@ fun SightScreen(sightId: String?, profileViewModel: ProfileViewModel) {
             model = currentSight.picture,
             contentDescription = null,
             modifier = Modifier.fillMaxSize(), loading = {
-                CircularProgressIndicator(color = Color.LightGray, modifier = Modifier.size(10.dp,10.dp))
+                Box( modifier = Modifier.size(100.dp), contentAlignment = Alignment.Center) {
+                    CircularProgressIndicator(color = Color.LightGray, modifier = Modifier.size(100.dp))
+                }
+
             }
 
         )
-        /*
-        Icon(
-            painter = painterResource(id = currentSight.picture),
-            contentDescription = null,
-            modifier = Modifier.fillMaxSize(),
-            tint = Color.Unspecified
-        )
 
-         */
         Column(verticalArrangement = Arrangement.Bottom, modifier = Modifier.fillMaxSize()) {
             Text(text = currentSight.sightName, fontSize = 30.sp, color = Color.White)
             Text(text = currentSight.date, color = Color.White)
@@ -272,31 +269,15 @@ fun SightCard(sight: SightFB, onItemClicked: (sightId: String) -> Unit) {
                     .size(156.dp, 118.dp)
                     .padding(0.dp, 0.dp)
             ) {
-                AsyncImage(model = sight.thumbnail, contentDescription =null, placeholder = painterResource(
-                    id = R.drawable.ic_dummylocationpic
-                ), modifier = Modifier.fillMaxSize())
-                /*
-                Icon(
-                    painterResource(id = sight.pictureThumbnail),
-                    contentDescription = null,
-                    tint = Color.Unspecified,
-                    modifier = Modifier.fillMaxSize()
-
-                )*/
+                SubcomposeAsyncImage(model = sight.thumbnail, contentDescription = null, modifier = Modifier.fillMaxSize(),
+                    loading = {
+                        Box(modifier = Modifier.size(50.dp), contentAlignment = Alignment.Center) {
+                            CircularProgressIndicator(color = Color.LightGray, modifier = Modifier.size(50.dp))
+                        }
+                    }
+                )
             }
-            /*
-            Image(painterResource(id = sight.pictureThumbnail),
-                contentDescription = null, modifier = Modifier
-                    .scale(3f)
-                    .padding(0.dp, 20.dp))
-            Icon(
-                painterResource(id = sight.pictureThumbnail),
-                contentDescription = null,
-                tint = Color.Unspecified,
-                modifier = Modifier
-                    .scale(3f)
-                    .padding(0.dp, 7.dp)
-            )*/
+
             Row(modifier = Modifier.heightIn(50.dp, 60.dp)) {
 
                 Text(
@@ -328,24 +309,16 @@ fun PreviewHeader(
     onItemClicked: (sightId: String) -> Unit,
     profileViewModel: ProfileViewModel
 ) {
-    var xp by remember {
-        mutableStateOf(670)
-    }
+
     LaunchedEffect(Unit) {
         profileViewModel.startListeningForData()
     }
-    //ProfileHeader(profilbild = painterResource(id = R.drawable.ic_dummyprofilepic), name = "Max Mustermann", overAllXP = xp)
+
     ProfileScreen(profileViewModel, onItemClicked)
 }
 
 
-@Preview(showBackground = true)
-@Composable
-fun ActualPreview() {
-    //ProfileHeader(profilbild = painterResource(id = R.drawable.ic_dummyprofilepic), name = "Max Mustermann", overAllXP = 130 )
-    //ProfileSelection1()
-    //SlideCard(onClick = {})
-}
+
 
 
 @Composable
@@ -408,50 +381,5 @@ fun TierGrid(modifier: Modifier, onClick: (id: Int) -> Unit, avatarList: State<L
                     .rotate(-90f)
             )
         }
-        //SlideCard(onClick = onClick)
     }
 }
-/*
-@Composable
-fun SlideCard (onClick: (id: Int) -> Unit) {
-    Box(modifier = Modifier.height(110.dp), contentAlignment = Alignment.Center) {
-        LazyHorizontalGrid(
-            modifier = Modifier,
-            rows = GridCells.Fixed(1), contentPadding = PaddingValues(25.dp,10.dp),
-            verticalArrangement = Arrangement.spacedBy(10.dp),
-            horizontalArrangement = Arrangement.spacedBy(10.dp)
-
-        ) {
-            items(listOfAvatars.size) { it ->
-                val avatarId = listOfAvatars[it]
-                Icon(
-                    painter = painterResource(avatarId),
-                    contentDescription = null, tint = Color.Unspecified,
-                    modifier = Modifier.clickable {
-                        onClick(avatarId)
-                    }
-                )
-            }
-        }
-        Row(verticalAlignment = Alignment.CenterVertically,
-            horizontalArrangement = Arrangement.SpaceBetween,
-            modifier = Modifier.fillMaxSize()) {
-            val brush1 = Brush.horizontalGradient(listOf(Color.Gray, Color(0f,0f,0f,0f)))
-            val brush2 = Brush.horizontalGradient(listOf(Color(0f,0f,0f,0f), Color.Gray))
-            Icon(imageVector = Icons.Rounded.ArrowDropDown, contentDescription = null, tint = Color(1f,1f,1f,0.7f),
-                modifier = Modifier
-                    .fillMaxHeight()
-                    .background(brush1)
-                    .rotate(90f)
-            )
-            Icon(imageVector = Icons.Rounded.ArrowDropDown, contentDescription = null, tint = Color(1f,1f,1f,0.7f) ,
-                modifier = Modifier
-                    .fillMaxHeight()
-                    .background(brush2)
-                    .rotate(-90f))
-        }
-    }
-
-}
-
- */

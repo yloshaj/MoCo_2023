@@ -26,20 +26,16 @@ import com.group16.mytrips.viewModel.NavigationViewModel
 fun MapsSDK(
     modifier: Modifier,
     sightList: State<MutableList<DefaultSightFB>>,
-    cameraPosition: CameraPositionState, loc : State<LocationDetails?>,
+    cameraPosition: CameraPositionState,
     appViewModel: NavigationViewModel
 ) {
 
-
     val location = appViewModel.getLocationLiveData().observeAsState()
-
-
 
     val mapProperties = MapProperties(
         isMyLocationEnabled = location.value != null,
 
         )
-
 
     GoogleMap(
         modifier = modifier,
@@ -56,41 +52,5 @@ fun MapsSDK(
 
 
     }
-
-}
-
-@Composable
-fun MapsSDK1(modifier: Modifier) {
-    val location = LatLng(51.0230345, 7.5654156)
-    val locationState = MarkerState(position = location)
-    val location2 = LatLng(51.0243073, 7.5662209)
-    val locationState2 = MarkerState(position = location2)
-    val location3 = LatLng(51.0263193, 7.5634976)
-    val locationState3 = MarkerState(position = location3)
-    val cameraPositionState = rememberCameraPositionState {
-        position = CameraPosition.fromLatLngZoom(location, 14f)
-    }
-    GoogleMap(
-        modifier = modifier,
-        cameraPositionState = cameraPositionState
-    ) {
-        Marker(
-            state = locationState, title = "Sehenswürdigkeit",
-            icon = BitmapDescriptorFactory.defaultMarker(BitmapDescriptorFactory.HUE_AZURE)
-        )
-        Marker(
-            state = locationState2, title = "Marker 2", visible = true,
-            icon = BitmapDescriptorFactory.defaultMarker(BitmapDescriptorFactory.HUE_AZURE)
-        )
-        Marker(
-            state = locationState3, title = "Marker 3", visible = true,
-            icon = BitmapDescriptorFactory.defaultMarker(BitmapDescriptorFactory.HUE_AZURE)
-        )
-    }
-}
-
-@Preview
-@Composable
-fun Preview() {
 
 }

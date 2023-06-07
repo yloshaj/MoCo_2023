@@ -25,12 +25,7 @@ sealed class NavigationRoute {
     object DetailedSightScreen {
         val route = "DetailedSightScreen"
     }
-
-    object DetailedProfileScreen {
-        val route = "DetailedProfileScreen"
-    }
-
-
+    
 }
 
 @Composable

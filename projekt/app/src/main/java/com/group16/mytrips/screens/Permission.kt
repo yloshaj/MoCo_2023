@@ -27,40 +27,7 @@ import kotlinx.coroutines.android.awaitFrame
 import okhttp3.internal.wait
 import java.security.Permission
 
-@OptIn(ExperimentalPermissionsApi::class)
-@Composable
-fun PermissionAlert(
-    permissionTitle: String,
-    rationale: String,
-    permission: String
-) {
 
-    val permissionState = rememberPermissionState(permission = permission)
-    var openDialog by remember {
-        mutableStateOf(true)
-    }
-
-
-    if (!permissionState.hasPermission && openDialog) {
-        AlertDialog(onDismissRequest = {
-            openDialog = false
-        },
-            title = { Text(text = permissionTitle) },
-            text = { Text(text = rationale) },
-            confirmButton = {
-                Button(
-                    onClick = { permissionState.launchPermissionRequest(); openDialog = false; }) {
-                    Text(text = "Confirm")
-                }
-            },
-            dismissButton = {
-                Button(onClick = { openDialog = false }) {
-                    Text(text = "Deny")
-                }
-            })
-    }
-
-}
 
 @Composable
 fun LaunchPermission(
@@ -94,7 +61,6 @@ fun LaunchPermission(
             confirmButton = {
                 Button(onClick = {
                     openDialog = false;
-                    //requestPermission(permission, permissionTitle, launcher)
                     requestPermissionNav(permission,permissionTitle,launcher, activity)
 
 
@@ -110,17 +76,6 @@ fun LaunchPermission(
     }
 }
 
-@Preview
-@Composable
-fun PreViewPermission() {
-    PermissionAlert(
-        permissionTitle = "Location",
-        rationale = "Location is needed for Navigation!",
-        permission = Manifest.permission.ACCESS_FINE_LOCATION
-    )
-
-
-}
 
 private fun requestPermissionNav(permission: String, title: String, activityResult: ActivityResultLauncher<String>, activity: Activity) {
     when {

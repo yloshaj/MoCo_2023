@@ -23,6 +23,7 @@ import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.rounded.Search
 import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
+import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.Divider
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Icon
@@ -54,6 +55,7 @@ import androidx.compose.ui.platform.LocalFocusManager
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.sp
 import coil.compose.AsyncImage
+import coil.compose.SubcomposeAsyncImage
 import com.google.android.gms.maps.model.LatLng
 import com.google.maps.android.compose.CameraPositionState
 import com.group16.mytrips.data.DefaultSightFB
@@ -63,7 +65,6 @@ import kotlin.math.roundToInt
 
 @Composable
 fun NavigationScreen(
-
     navigationViewModel: NavigationViewModel,
     navigate: () -> Unit
 ) {
@@ -73,25 +74,7 @@ fun NavigationScreen(
     val loc = navigationViewModel.getLocationLiveData().observeAsState()
     var sightList = navigationViewModel.getSortedList().collectAsState()
     var cameraPosition = navigationViewModel.getCameraPositionState()
-    /*
-    var cameraPosition = rememberCameraPositionState {
-        if (loc.value != null) {
-            position = CameraPosition.fromLatLngZoom(
-                LatLng(loc.value!!.latitude, loc.value!!.longitude),
-                14f
-            )
-        } else {
-            position = CameraPosition.fromLatLngZoom(
-                LatLng(
-                    sightList.value[0].latitude,
-                    sightList.value[0].longitude
-                ), 14f
-            )
-        }
 
-    }
-
-     */
 
     LaunchPermission(
         permission = Manifest.permission.ACCESS_FINE_LOCATION,
@@ -99,11 +82,6 @@ fun NavigationScreen(
         rationale = "Location needed for navigation",
         navigate = navigate
     )
-
-
-
-
-
 
     Box {
         Text(text = loc.value.toString())
@@ -113,7 +91,7 @@ fun NavigationScreen(
             MapsSDK(
                 modifier = Modifier
                     .fillMaxWidth()
-                    .weight(0.6f), sightList, cameraPosition, loc, navigationViewModel
+                    .weight(0.6f), sightList, cameraPosition, navigationViewModel
             )
             Box(modifier = Modifier.weight(0.4f)) {
 
@@ -211,7 +189,7 @@ fun SearchBar(appViewModel: NavigationViewModel, cameraPosition: CameraPositionS
                     .padding(18.dp, 0.dp)
                     .background(color = Color.White)
             ) {
-                //(modifier = Modifier.fillMaxWidth().heightIn(0.dp,220.dp).padding(18.dp, 0.dp), shape = ShapeDefaults.ExtraSmall, colors = CardDefaults.cardColors(Color.LightGray)) {
+
                 LazyColumn(modifier = Modifier.fillMaxWidth()) {
                     items(sightListForQuery.size) {
                         Card(
@@ -227,7 +205,10 @@ fun SearchBar(appViewModel: NavigationViewModel, cameraPosition: CameraPositionS
                                         )
                                     ); focusManager.clearFocus(); appViewModel.setIsSearching(false)
                                     appViewModel.onSearchTextChange("")
-                                }, shape = ShapeDefaults.ExtraSmall, colors = CardDefaults.cardColors(Color.White), elevation = CardDefaults.cardElevation(11.dp)
+                                },
+                            shape = ShapeDefaults.ExtraSmall,
+                            colors = CardDefaults.cardColors(Color.White),
+                            elevation = CardDefaults.cardElevation(11.dp)
                         ) {
                             Text(
                                 text = sightListForQuery[it].sightName,
@@ -319,28 +300,12 @@ fun LocationCard(
                     )
                     Text(text = adjustedDistance, fontSize = 14.sp)
                 }
+                SubcomposeAsyncImage(model = sight.thumbnail, contentDescription = null, loading = {
+                    Box(modifier = Modifier.size(20.dp), contentAlignment = Alignment.Center) {
+                        CircularProgressIndicator(color = Color.LightGray, modifier = Modifier.size(20.dp))
+                    }
+                }, modifier = Modifier.size(78.dp, 59.dp))
 
-                AsyncImage(
-                    model = sight.thumbnail,
-                    contentDescription = null,
-                    placeholder = painterResource(
-                        id = R.drawable.ic_dummylocationpic
-                    ),
-                    modifier = Modifier.size(78.dp, 59.dp)
-                )
-
-
-                /*
-                Icon(
-                    painter = painterResource(id = sight.pictureThumbnail),
-                    contentDescription = "Default Picture of Sight",
-                    tint = Color.Unspecified,
-                    modifier = Modifier
-                        .scale(1.3f)
-                        .offset(0.dp, 0.dp)
-                )
-
-                 */
 
             }
 
@@ -349,17 +314,3 @@ fun LocationCard(
     }
 }
 
-
-@Preview
-@Composable
-fun PreviewNavScreen() {
-    var locationDistance by remember {
-        mutableStateOf(1345)
-    }
-    //Maps()
-    //LocationColumn(list = locationList)
-    //LocationCard(locationDefaultPicture = painterResource(id = R.drawable.ic_dummylocationpic),
-    //locationName ="Location Name" , locationDistance = locationDistance )
-    //NavigationScreen()
-    //SearchBar()
-}
