@@ -2,8 +2,15 @@ package com.example.articlecamera.Cam
 
 import android.Manifest
 import android.content.ContentValues
+import android.content.Context
 import android.content.pm.PackageManager
+import android.graphics.Bitmap
+import android.graphics.Canvas
+import android.graphics.Matrix
+import android.graphics.Paint
+import android.media.ExifInterface
 import android.net.Uri
+import android.provider.MediaStore
 import android.util.Log
 import androidx.activity.compose.rememberLauncherForActivityResult
 import androidx.activity.result.contract.ActivityResultContracts
@@ -29,10 +36,8 @@ import androidx.compose.material.icons.sharp.Lens
 import androidx.compose.material.icons.sharp.PhotoLibrary
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
-import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
-import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
@@ -45,7 +50,6 @@ import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.LocalLifecycleOwner
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
-import androidx.compose.ui.unit.sp
 import androidx.compose.ui.viewinterop.AndroidView
 import androidx.core.content.ContextCompat
 import com.group16.mytrips.R
@@ -56,24 +60,28 @@ import com.group16.mytrips.data.getOutputDirectory
 import com.group16.mytrips.data.takePicture
 import com.group16.mytrips.screens.LaunchPermission
 import com.group16.mytrips.viewModel.CameraViewModel
+import java.io.IOException
 
 @Composable
-fun CameraView(viewModel: CameraViewModel,
-    onImageCaptured: (Uri, Boolean) -> Unit = { uri, fromGallery ->
-        Log.d(ContentValues.TAG, "Image Uri Captured from Camera View")
-        handleImageCapture(uri)
-    }, onError: (ImageCaptureException) -> Unit = {
-        Log.e("ja", "Zeige Fehler", it)
+fun CameraView(
+    viewModel: CameraViewModel,
+    onImageCaptured: (Uri, Uri, Boolean) -> Unit = { originalUri, croppedUri, fromGalery ->
+        Log.d(ContentValues.TAG, "Oben")
+    },
+    onError: (ImageCaptureException) -> Unit = {
+        Log.e("FehlerCapture", "Zeige Fehler", it)
     }
 ) {
     val context = LocalContext.current
-    LaunchPermission(permission = android.Manifest.permission.CAMERA, permissionTitle = "Kamera", rationale = "Um Bilder zu machen, brauchen wir die Kamera!")
     LaunchedEffect(Unit) {
-        if ((ContextCompat.checkSelfPermission(
-                context,
-                Manifest.permission.ACCESS_FINE_LOCATION
-            ) == PackageManager.PERMISSION_GRANTED))  viewModel.startLocationUpdates()
+        viewModel.startListeningForData()
     }
+    LaunchPermission(
+        permission = android.Manifest.permission.CAMERA,
+        permissionTitle = "Kamera",
+        rationale = "Um Bilder zu machen, brauchen wir die Kamera!"
+    )
+
 
     var lensFacing by remember { mutableStateOf(CameraSelector.LENS_FACING_BACK) }
     val imageCapture: ImageCapture = remember {
@@ -82,7 +90,14 @@ fun CameraView(viewModel: CameraViewModel,
     val galleryLauncher = rememberLauncherForActivityResult(
         ActivityResultContracts.GetContent()
     ) { uri: Uri? ->
-        if (uri != null) onImageCaptured(uri, true)
+        if (uri != null) {
+            val croppedUri = createCroppedImage(
+                uri,
+                context
+            )
+            onImageCaptured(uri, croppedUri, true)
+            //viewModel.uploadPicturesToFirebaseStorage(8,listOf(uri.toString(),croppedUri.toString()))
+        }
     }
 
     CameraPreviewView(
@@ -92,14 +107,21 @@ fun CameraView(viewModel: CameraViewModel,
     ) { cameraUIAction ->
         when (cameraUIAction) {
             is CameraUIAction.OnCameraClick -> {
-                imageCapture.takePicture(context, lensFacing, onImageCaptured, onError)
+                imageCapture.takePicture(
+                    context,
+                    lensFacing,
+                    { originalUri, true1 ->
+                        val croppedUri = createCroppedImage(originalUri, context)
+                        viewModel.uploadPicturesToFirebaseStorage(8,listOf(originalUri.toString(),croppedUri.toString()))
+                    }, onError)
             }
 
             is CameraUIAction.OnSwitchCameraClick -> {
-                lensFacing =
-                    if (lensFacing == CameraSelector.LENS_FACING_BACK) CameraSelector.LENS_FACING_FRONT
-                    else
-                        CameraSelector.LENS_FACING_BACK
+                lensFacing = if (lensFacing == CameraSelector.LENS_FACING_BACK) {
+                    CameraSelector.LENS_FACING_FRONT
+                } else {
+                    CameraSelector.LENS_FACING_BACK
+                }
             }
 
             is CameraUIAction.OnGalleryViewClick -> {
@@ -115,12 +137,12 @@ fun CameraView(viewModel: CameraViewModel,
 
 @Composable
 private fun CameraPreviewView(viewModel: CameraViewModel,
-    imageCapture: ImageCapture,
-    lensFacing: Int = CameraSelector.LENS_FACING_BACK,
-    cameraUIAction: (CameraUIAction) -> Unit
+                              imageCapture: ImageCapture,
+                              lensFacing: Int = CameraSelector.LENS_FACING_BACK,
+                              cameraUIAction: (CameraUIAction) -> Unit
 ) {
 
-    val locState = viewModel.defaultLocalSightList.collectAsState()
+    //val locState = viewModel.sightList.collectAsState()
     val context = LocalContext.current
     val lifecycleOwner = LocalLifecycleOwner.current
 
@@ -146,7 +168,7 @@ private fun CameraPreviewView(viewModel: CameraViewModel,
         AndroidView({ previewView }, modifier = Modifier.fillMaxSize()) {
 
         }
-        Column(modifier = Modifier.align(Alignment.TopCenter)) {
+        /*Column(modifier = Modifier.align(Alignment.TopCenter)) {
             Row(modifier = Modifier
                 .fillMaxWidth()
                 .background(Color.Black)
@@ -160,7 +182,7 @@ private fun CameraPreviewView(viewModel: CameraViewModel,
                     modifier = Modifier.padding(8.dp)
                 )
             }
-        }
+        } */
 
         Column(
             modifier = Modifier.align(Alignment.BottomCenter),
@@ -231,8 +253,90 @@ fun CameraControl(
     }
 }
 
-private fun handleImageCapture(uri: Uri) {
-    Log.i("ja", "Bild Gemacht: $uri")
+private fun handleImageCapture() {
+    Log.i("ja", "Bild Gemacht:")
+}
+private fun createCroppedImage(
+    originalUri: Uri,
+    context: Context,
+): Uri {
+    val originalBitmap = MediaStore.Images.Media.getBitmap(context.contentResolver, originalUri)
+
+    // Get the rotation angle from the image's Exif data
+    val rotationAngle = getImageRotationAngle(originalUri, context)
+
+    // Apply rotation to the original bitmap if necessary
+    val rotatedBitmap = rotateBitmap(originalBitmap, rotationAngle)
+
+    val croppedBitmap = Bitmap.createBitmap(156, 118, Bitmap.Config.ARGB_8888)
+    val canvas = Canvas(croppedBitmap)
+    val scaleFactorX = croppedBitmap.width.toFloat() / rotatedBitmap.width
+    val scaleFactorY = croppedBitmap.height.toFloat() / rotatedBitmap.height
+    val scaleFactor = scaleFactorX.coerceAtLeast(scaleFactorY)
+    val scaledWidth = rotatedBitmap.width * scaleFactor
+    val scaledHeight = rotatedBitmap.height * scaleFactor
+    val offsetX = (croppedBitmap.width - scaledWidth) / 2
+    val offsetY = (croppedBitmap.height - scaledHeight) / 2
+    val scaleMatrix = Matrix().apply {
+        postScale(scaleFactor, scaleFactor)
+        postTranslate(offsetX, offsetY)
+    }
+    val paint = Paint().apply {
+        isAntiAlias = true
+        isFilterBitmap = true
+        isDither = true
+    }
+    canvas.drawBitmap(rotatedBitmap, scaleMatrix, paint)
+    val croppedUri = saveBitmapToMediaStore(croppedBitmap, context)
+    return croppedUri
+}
+
+private fun getImageRotationAngle(uri: Uri, context: Context): Int {
+    var rotationAngle = 0
+    try {
+        val inputStream = context.contentResolver.openInputStream(uri)?:throw Exception("FehlerUnten")
+        val exifInterface = ExifInterface(inputStream)
+        val orientation = exifInterface.getAttributeInt(
+            ExifInterface.TAG_ORIENTATION,
+            ExifInterface.ORIENTATION_UNDEFINED
+        )
+        rotationAngle = when (orientation) {
+            ExifInterface.ORIENTATION_ROTATE_90 -> 90
+            ExifInterface.ORIENTATION_ROTATE_180 -> 180
+            ExifInterface.ORIENTATION_ROTATE_270 -> 270
+            else -> 0
+        }
+        inputStream?.close()
+    } catch (e: IOException) {
+        e.printStackTrace()
+    }
+    return rotationAngle
+}
+
+private fun rotateBitmap(bitmap: Bitmap, degrees: Int): Bitmap {
+    val matrix = Matrix()
+    matrix.postRotate(degrees.toFloat())
+    return Bitmap.createBitmap(
+        bitmap, 0, 0, bitmap.width, bitmap.height, matrix, true
+    )
+}
+
+private fun saveBitmapToMediaStore(bitmap: Bitmap, context: Context): Uri {
+    val contentValues = ContentValues().apply {
+        put(MediaStore.Images.Media.DISPLAY_NAME, "cropped_image")
+        put(MediaStore.Images.Media.MIME_TYPE, "image/jpeg")
+    }
+    val contentResolver = context.contentResolver
+    val uri = contentResolver.insert(
+        MediaStore.Images.Media.EXTERNAL_CONTENT_URI,
+        contentValues
+    )
+    uri?.let { safeUri ->
+        contentResolver.openOutputStream(safeUri)?.use { outputStream ->
+            bitmap.compress(Bitmap.CompressFormat.JPEG, 90, outputStream)
+        }
+    }
+    return uri ?: throw IOException("Failed to save cropped image")
 }
 
 

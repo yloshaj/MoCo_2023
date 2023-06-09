@@ -39,6 +39,7 @@ class CameraViewModel(application: Application) : AndroidViewModel(application) 
     private val collectionRef = firestore.collection("SightFB")
     private val userRef = firestore.collection("User")
     private val userId = "7T9VijHoW9vQTKnLlDhp"
+    private val defaultSightRef = firestore.collection("DefaultSightFB")
 
     private lateinit var listenerRegistrationUser: ListenerRegistration
 
@@ -49,7 +50,7 @@ class CameraViewModel(application: Application) : AndroidViewModel(application) 
     private var _defaultLocalSightList = MutableStateFlow(modelClass.defaultSightList)
     val defaultLocalSightList = _defaultLocalSightList.asStateFlow()
 
-    private val _sightList = MutableStateFlow<List<SightFB>>(emptyList())
+    private val _sightList = MutableStateFlow<MutableList<SightFB>>(emptyList<SightFB>().toMutableList())
     val sightList = _sightList.asStateFlow()
 
     fun uploadPicturesToFirebaseStorage(
@@ -69,6 +70,7 @@ class CameraViewModel(application: Application) : AndroidViewModel(application) 
                     val downloadUrls = uploadTasks.map { task ->
                         task.toString()
                     }
+                    Log.e("URL", downloadUrls[0])
 
                     val pictures = listOf(downloadUrls[0], downloadUrls[1])
                     uploadNewSight(sightId, pictures)
@@ -133,7 +135,7 @@ class CameraViewModel(application: Application) : AndroidViewModel(application) 
     private lateinit var listenerRegistration: ListenerRegistration
 
     fun startListeningForDefaultSightList() {
-        listenerRegistration = collectionRef.addSnapshotListener { snapshot, error ->
+        listenerRegistration = defaultSightRef.addSnapshotListener { snapshot, error ->
             if (error != null) {
                 // Handle error
                 return@addSnapshotListener
@@ -165,7 +167,7 @@ class CameraViewModel(application: Application) : AndroidViewModel(application) 
                 document.toObject(SightFB::class.java)
             } ?: emptyList()
 
-            _sightList.value = sights
+            _sightList.value = sights.toMutableList()
         }
     }
 
