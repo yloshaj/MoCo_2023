@@ -19,8 +19,10 @@ import androidx.camera.core.ImageCapture
 import androidx.camera.core.ImageCaptureException
 import androidx.camera.core.Preview
 import androidx.camera.view.PreviewView
+import androidx.compose.animation.AnimatedVisibility
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
+import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
@@ -31,14 +33,20 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.rounded.ArrowDropDown
 import androidx.compose.material.icons.sharp.FlipCameraAndroid
 import androidx.compose.material.icons.sharp.Lens
 import androidx.compose.material.icons.sharp.PhotoLibrary
+import androidx.compose.material3.AlertDialog
+import androidx.compose.material3.Button
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
+import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.livedata.observeAsState
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
@@ -46,20 +54,24 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.vector.ImageVector
+import androidx.compose.ui.modifier.modifierLocalConsumer
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.LocalLifecycleOwner
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
+import androidx.compose.ui.unit.sp
 import androidx.compose.ui.viewinterop.AndroidView
 import androidx.core.content.ContextCompat
 import com.group16.mytrips.R
 
 import com.group16.mytrips.data.CameraUIAction
+import com.group16.mytrips.data.DefaultSightFB
 import com.group16.mytrips.data.getCameraProvider
 import com.group16.mytrips.data.getOutputDirectory
 import com.group16.mytrips.data.takePicture
 import com.group16.mytrips.screens.LaunchPermission
 import com.group16.mytrips.viewModel.CameraViewModel
+import kotlinx.coroutines.flow.StateFlow
 import java.io.IOException
 
 @Composable
@@ -72,16 +84,28 @@ fun CameraView(
         Log.e("FehlerCapture", "Zeige Fehler", it)
     }
 ) {
+
     val context = LocalContext.current
     LaunchedEffect(Unit) {
         viewModel.startListeningForData()
+        if (ContextCompat.checkSelfPermission(
+                context,
+                Manifest.permission.ACCESS_FINE_LOCATION
+            ) != PackageManager.PERMISSION_GRANTED
+        ) {
+            viewModel.startLocationUpdates()
+        }
     }
+    val defaultSights = viewModel.getSortedList().collectAsState()
+
+    val location = viewModel.getLocationLiveData().observeAsState()
+
     LaunchPermission(
         permission = android.Manifest.permission.CAMERA,
         permissionTitle = "Kamera",
         rationale = "Um Bilder zu machen, brauchen wir die Kamera!"
     )
-
+    val alert by viewModel.alert.collectAsState()
 
     var lensFacing by remember { mutableStateOf(CameraSelector.LENS_FACING_BACK) }
     val imageCapture: ImageCapture = remember {
@@ -100,6 +124,7 @@ fun CameraView(
         }
     }
 
+    Text(text = "${location.value.toString()} $alert")
     CameraPreviewView(
         viewModel,
         imageCapture,
@@ -112,8 +137,13 @@ fun CameraView(
                     lensFacing,
                     { originalUri, true1 ->
                         val croppedUri = createCroppedImage(originalUri, context)
-                        viewModel.uploadPicturesToFirebaseStorage(8,listOf(originalUri.toString(),croppedUri.toString()))
-                    }, onError)
+                        /*viewModel.uploadPicturesToFirebaseStorage(
+                            8,
+                            listOf(originalUri.toString(), croppedUri.toString())
+                        )*/
+                        viewModel.setUriList(listOf(originalUri.toString(), croppedUri.toString()))
+                    }, onError
+                )
             }
 
             is CameraUIAction.OnSwitchCameraClick -> {
@@ -134,14 +164,21 @@ fun CameraView(
 }
 
 
-
 @Composable
-private fun CameraPreviewView(viewModel: CameraViewModel,
-                              imageCapture: ImageCapture,
-                              lensFacing: Int = CameraSelector.LENS_FACING_BACK,
-                              cameraUIAction: (CameraUIAction) -> Unit
+private fun CameraPreviewView(
+    viewModel: CameraViewModel,
+    imageCapture: ImageCapture,
+    lensFacing: Int = CameraSelector.LENS_FACING_BACK,
+    cameraUIAction: (CameraUIAction) -> Unit
 ) {
+    val defaultSights = viewModel.getSortedList().collectAsState()
+    var currentSight by remember {
+        mutableStateOf(DefaultSightFB(sightName = "Choose Sight"))
+    }
 
+    var expanded by remember {
+        mutableStateOf(false)
+    }
     //val locState = viewModel.sightList.collectAsState()
     val context = LocalContext.current
     val lifecycleOwner = LocalLifecycleOwner.current
@@ -163,38 +200,82 @@ private fun CameraPreviewView(viewModel: CameraViewModel,
         )
         preview.setSurfaceProvider(previewView.surfaceProvider)
     }
+    val alert by viewModel.alert.collectAsState()
 
     Box(modifier = Modifier.fillMaxSize()) {
+        if (alert) {
+            AlertDialog(
+                onDismissRequest = { viewModel.setAlert(false) },
+                confirmButton = {
+                    Button(
+                        onClick = { viewModel.setAlert(false); viewModel.uploadPicturesToFirebaseStorage(true) }) {
+                        Text(text = "Ja")
+                    }
+                },
+                text = { Text(text = "Dieses Bild verwenden? Ansonsten wird das Defaultbild verwendet") },
+                dismissButton = { Button(onClick = { viewModel.setAlert(false); viewModel.uploadPicturesToFirebaseStorage(false)}) {
+                    Text(text = "Nein")
+                }}
+            )
+        }
+
         AndroidView({ previewView }, modifier = Modifier.fillMaxSize()) {
 
         }
-        /*Column(modifier = Modifier.align(Alignment.TopCenter)) {
-            Row(modifier = Modifier
-                .fillMaxWidth()
-                .background(Color.Black)
-                .padding(5.dp),
-                horizontalArrangement = Arrangement.SpaceBetween,
-                verticalAlignment = Alignment.CenterVertically){
+
+
+
+        Column(modifier = Modifier.align(Alignment.TopCenter)) {
+            Row(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .background(Color.Black)
+                    .padding(5.dp)
+                    .clickable { expanded = !expanded },
+
+                verticalAlignment = Alignment.CenterVertically
+            ) {
+
                 Text(
-                    text = locState.value[0].sightName,
+                    text = currentSight.sightName,
                     color = Color.White,
                     fontSize = 24.sp,
-                    modifier = Modifier.padding(8.dp)
+                    modifier = Modifier
+                        .padding(8.dp)
+
                 )
+                Icon(
+                    imageVector = Icons.Rounded.ArrowDropDown,
+                    contentDescription = "Dropdown Arrow"
+                )
+
             }
-        } */
+            Text(text = alert.toString())
+            AnimatedVisibility(visible = expanded) {
+                Column(modifier = Modifier.fillMaxWidth()) {
+
+                    for (sight in defaultSights.value) Text(
+                        text = sight.sightName,
+                        modifier = Modifier.clickable {
+                            viewModel.setCurrentSight(sight)
+                            currentSight = sight
+                            expanded = !expanded
+                        })
+                }
+            }
+        }
 
         Column(
             modifier = Modifier.align(Alignment.BottomCenter),
             verticalArrangement = Arrangement.Bottom
         ) {
-            CameraControls(cameraUIAction)
+            CameraControls(cameraUIAction, viewModel::setAlert)
         }
     }
 }
 
 @Composable
-fun CameraControls(cameraUIAction: (CameraUIAction) -> Unit) {
+fun CameraControls(cameraUIAction: (CameraUIAction) -> Unit, setAlert: (Boolean) -> Unit) {
     Row(
         modifier = Modifier
             .fillMaxWidth()
@@ -219,7 +300,7 @@ fun CameraControls(cameraUIAction: (CameraUIAction) -> Unit) {
                 .size(64.dp)
                 .padding(1.dp)
                 .border(1.dp, Color.White, CircleShape),
-            onClick = { cameraUIAction(CameraUIAction.OnCameraClick) }
+            onClick = { cameraUIAction(CameraUIAction.OnCameraClick); setAlert(true) }
         )
 
         CameraControl(
@@ -256,6 +337,7 @@ fun CameraControl(
 private fun handleImageCapture() {
     Log.i("ja", "Bild Gemacht:")
 }
+
 private fun createCroppedImage(
     originalUri: Uri,
     context: Context,
@@ -294,7 +376,8 @@ private fun createCroppedImage(
 private fun getImageRotationAngle(uri: Uri, context: Context): Int {
     var rotationAngle = 0
     try {
-        val inputStream = context.contentResolver.openInputStream(uri)?:throw Exception("FehlerUnten")
+        val inputStream =
+            context.contentResolver.openInputStream(uri) ?: throw Exception("FehlerUnten")
         val exifInterface = ExifInterface(inputStream)
         val orientation = exifInterface.getAttributeInt(
             ExifInterface.TAG_ORIENTATION,

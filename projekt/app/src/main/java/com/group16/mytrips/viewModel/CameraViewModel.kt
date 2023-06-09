@@ -34,7 +34,7 @@ class CameraViewModel(application: Application) : AndroidViewModel(application) 
 
     private val storage = FirebaseStorage.getInstance()
     private val locationLiveData = LocationLiveData(application)
-    private val modelClass = ModelClass()
+
     private val firestore = FirebaseFirestore.getInstance()
     private val collectionRef = firestore.collection("SightFB")
     private val userRef = firestore.collection("User")
@@ -47,33 +47,53 @@ class CameraViewModel(application: Application) : AndroidViewModel(application) 
     private var _user = MutableStateFlow(User())
     val user = _user.asStateFlow()
 
-    private var _defaultLocalSightList = MutableStateFlow(modelClass.defaultSightList)
-    val defaultLocalSightList = _defaultLocalSightList.asStateFlow()
 
     private val _sightList = MutableStateFlow<MutableList<SightFB>>(emptyList<SightFB>().toMutableList())
     val sightList = _sightList.asStateFlow()
 
+    private var _alert = MutableStateFlow(false)
+    val alert = _alert.asStateFlow()
+
+    fun setAlert(shouldShow: Boolean) {
+        _alert.value = shouldShow
+    }
+
+    private var _uriList = MutableStateFlow<List<String>>(emptyList())
+    val uriList = _uriList.asStateFlow()
+
+    fun setUriList(list: List<String>) {
+        _uriList.value = list
+    }
+
+    private var _currentSight = MutableStateFlow(DefaultSightFB())
+    val currentSight = _currentSight.asStateFlow()
+
+    fun setCurrentSight(sight: DefaultSightFB) {
+        _currentSight.value = sight
+    }
     fun uploadPicturesToFirebaseStorage(
-        sightId: Int,
-        imageUris: List<String>
+        newPictures: Boolean
     ) {
         val storageRef = storage.reference
-        if (_sightList.value.none { it.sightId == sightId }) {
+        if (_sightList.value.none { it.sightId == _currentSight.value.sightId }) {
             viewModelScope.launch(Dispatchers.IO) {
                 try {
-                    val uploadTasks = imageUris.mapIndexed { index, uri ->
-                        val imageRef = storageRef.child("images/${UUID.randomUUID()}_$index")
-                        imageRef.putFile(Uri.parse(uri)).await()
-                        imageRef.downloadUrl.await()
-                    }
+                    if (!newPictures) uploadNewSight(null, null)
+                    else {
+                        val uploadTasks = _uriList.value.mapIndexed { index, uri ->
+                            val imageRef = storageRef.child("images/${UUID.randomUUID()}_$index")
+                            imageRef.putFile(Uri.parse(uri)).await()
+                            imageRef.downloadUrl.await()
+                        }
 
-                    val downloadUrls = uploadTasks.map { task ->
-                        task.toString()
-                    }
-                    Log.e("URL", downloadUrls[0])
+                        val downloadUrls = uploadTasks.map { task ->
+                            task.toString()
+                        }
+                        Log.e("URL", downloadUrls[0])
 
-                    val pictures = listOf(downloadUrls[0], downloadUrls[1])
-                    uploadNewSight(sightId, pictures)
+                        //val pictures = listOf(downloadUrls[0], downloadUrls[1])
+                        uploadNewSight(downloadUrls[0], downloadUrls[1])
+                    }
                 } catch (e: Exception) {
                     Log.e("Firebase Storage", e.toString())
                 }
@@ -81,14 +101,16 @@ class CameraViewModel(application: Application) : AndroidViewModel(application) 
         }
     }
 
-    fun uploadNewSight(sightId: Int, uris: List<String>) {
-        val sight = _sightList.value.filter { it.sightId == sightId }
+    fun uploadNewSight(picture: String?, thumbnail: String?) {
+
+        val sight = _sightList.value.filter { it.sightId == _currentSight.value.sightId }
         if (sight.isEmpty()) {
-            val defaultSight = _defaultSightList.value.first { it.sightId == sightId }
+            val defaultSight = _defaultSightList.value.first { it.sightId == _currentSight.value.sightId }
+
             val newSight = SightFB(
-                sightId = sightId,
-                picture = uris[0],
-                thumbnail = uris[1],
+                sightId = defaultSight.sightId,
+                picture = picture ?: defaultSight.defualtPicture,
+                thumbnail = thumbnail ?: defaultSight.thumbnail,
                 sightName = defaultSight.sightName,
                 latitude = defaultSight.latitude,
                 longitude = defaultSight.longitude,
@@ -176,7 +198,10 @@ class CameraViewModel(application: Application) : AndroidViewModel(application) 
     }
 
     fun getLocationLiveData() = locationLiveData
-    fun startLocationUpdates() = locationLiveData.startLocationUpdates()
+    fun startLocationUpdates() = {
+        ->
+        locationLiveData.startLocationUpdates()
+    }
     private fun distanceInMeter(
         startLat: Double,
         startLon: Double,
@@ -218,12 +243,13 @@ class CameraViewModel(application: Application) : AndroidViewModel(application) 
             }
     }
 
-    fun getSortedList(): StateFlow<MutableList<DefaultSight>> {
+    fun getSortedList(): StateFlow<MutableList<DefaultSightFB>> {
+        val location = getLocationLiveData().value
         val observedLocationData = getLocationLiveData()
-        val list = _defaultLocalSightList.asStateFlow()
+        val list = _defaultSightList.asStateFlow()
         list.value.forEach {
             val l = observedLocationData
-            val location = getLocationLiveData().value
+
             if (location == null) it.distance = null
             else
                 it.distance = distanceInMeter(
@@ -235,7 +261,8 @@ class CameraViewModel(application: Application) : AndroidViewModel(application) 
         }
         //list.value.sortedByDescending { it.distance }
         list.value.sortBy { it.distance }
-        list.value.retainAll { if (it.distance != null) it.distance!! <= diameter else false }
+        if (location != null) list.value.retainAll { it.distance!! <= diameter }
+
         return list
     }
 
