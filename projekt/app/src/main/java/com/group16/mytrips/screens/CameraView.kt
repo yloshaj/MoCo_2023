@@ -250,7 +250,6 @@ private fun CameraPreviewView(
                 )
 
             }
-            Text(text = alert.toString())
             AnimatedVisibility(visible = expanded) {
                 Column(modifier = Modifier.fillMaxWidth()) {
 
