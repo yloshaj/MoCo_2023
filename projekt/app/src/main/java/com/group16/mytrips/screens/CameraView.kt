@@ -1,6 +1,8 @@
 package com.example.articlecamera.Cam
 
+import android.Manifest
 import android.content.ContentValues
+import android.content.pm.PackageManager
 import android.net.Uri
 import android.util.Log
 import androidx.activity.compose.rememberLauncherForActivityResult
@@ -45,6 +47,7 @@ import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.compose.ui.viewinterop.AndroidView
+import androidx.core.content.ContextCompat
 import com.group16.mytrips.R
 
 import com.group16.mytrips.data.CameraUIAction
@@ -63,9 +66,15 @@ fun CameraView(viewModel: CameraViewModel,
         Log.e("ja", "Zeige Fehler", it)
     }
 ) {
-    LaunchPermission(permission = android.Manifest.permission.CAMERA, permissionTitle = "Kamera", rationale = "Um Bilder zu machen, brauchen wir die Kamera!")
-
     val context = LocalContext.current
+    LaunchPermission(permission = android.Manifest.permission.CAMERA, permissionTitle = "Kamera", rationale = "Um Bilder zu machen, brauchen wir die Kamera!")
+    LaunchedEffect(Unit) {
+        if ((ContextCompat.checkSelfPermission(
+                context,
+                Manifest.permission.ACCESS_FINE_LOCATION
+            ) == PackageManager.PERMISSION_GRANTED))  viewModel.startLocationUpdates()
+    }
+
     var lensFacing by remember { mutableStateOf(CameraSelector.LENS_FACING_BACK) }
     val imageCapture: ImageCapture = remember {
         ImageCapture.Builder().build()
@@ -111,7 +120,7 @@ private fun CameraPreviewView(viewModel: CameraViewModel,
     cameraUIAction: (CameraUIAction) -> Unit
 ) {
 
-    val locState = viewModel.getSortedList().collectAsState()
+    val locState = viewModel.defaultLocalSightList.collectAsState()
     val context = LocalContext.current
     val lifecycleOwner = LocalLifecycleOwner.current
 
