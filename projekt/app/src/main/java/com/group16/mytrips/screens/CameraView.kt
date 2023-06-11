@@ -313,13 +313,13 @@ private fun CameraPreviewView(
             modifier = Modifier.align(Alignment.BottomCenter),
             verticalArrangement = Arrangement.Bottom
         ) {
-            CameraControls(cameraUIAction, viewModel::setAlert)
+            CameraControls(cameraUIAction, viewModel::setAlert, viewModel::setSightVisitedAlert, viewModel::alreadyVisited)
         }
     }
 }
 
 @Composable
-fun CameraControls(cameraUIAction: (CameraUIAction) -> Unit, setAlert: (Boolean) -> Unit) {
+fun CameraControls(cameraUIAction: (CameraUIAction) -> Unit, setAlert: (Boolean) -> Unit, setightVisitedAlert: (Boolean) -> Unit, alreadyVisited: () -> Boolean) {
     Row(
         modifier = Modifier
             .fillMaxWidth()
@@ -344,7 +344,7 @@ fun CameraControls(cameraUIAction: (CameraUIAction) -> Unit, setAlert: (Boolean)
                 .size(64.dp)
                 .padding(1.dp)
                 .border(1.dp, Color.White, CircleShape),
-            onClick = { cameraUIAction(CameraUIAction.OnCameraClick); setAlert(true) }
+            onClick = { cameraUIAction(CameraUIAction.OnCameraClick); if (alreadyVisited()) setightVisitedAlert(true) else setAlert(true) }
         )
 
         CameraControl(

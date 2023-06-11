@@ -51,6 +51,7 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.draw.alpha
 import androidx.compose.ui.draw.scale
 import androidx.compose.ui.input.pointer.pointerInput
+import androidx.compose.ui.modifier.modifierLocalConsumer
 import androidx.compose.ui.platform.LocalFocusManager
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.sp
@@ -90,7 +91,7 @@ fun NavigationScreen(
         navigate = navigate
     )
 
-    Box {
+    Box (modifier = Modifier.fillMaxSize().background(Color.White)) {
         Text(text = loc.value.toString(), color = Color.White)
         //Maps()
         Column {

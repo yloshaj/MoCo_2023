@@ -50,12 +50,14 @@ class CameraViewModel(application: Application) : AndroidViewModel(application) 
     val sightList = _sightList.asStateFlow()
 
 
+
     private var _alert = MutableStateFlow(false)
     val alert = _alert.asStateFlow()
     fun setAlert(shouldShow: Boolean) {
         if (_currentSight.value.sightId != -1) _alert.value = shouldShow
     }
 
+    fun alreadyVisited() = _sightList.value.any { it.sightId == _currentSight.value.sightId}
 
     private var _sightVisitedAlert = MutableStateFlow(false)
     val sightVisitedAlert = _sightVisitedAlert.asStateFlow()
