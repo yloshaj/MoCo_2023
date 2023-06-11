@@ -1,6 +1,8 @@
 package com.group16.mytrips.viewModel
 
 import android.app.Application
+import android.icu.util.Calendar
+import android.icu.util.TimeZone
 import android.location.Location
 import android.net.Uri
 import android.util.Log
@@ -10,72 +12,76 @@ import com.google.firebase.firestore.FirebaseFirestore
 import com.google.firebase.firestore.ListenerRegistration
 import com.google.firebase.firestore.SetOptions
 import com.google.firebase.storage.FirebaseStorage
-import com.group16.mytrips.data.DefaultSight
 import com.group16.mytrips.data.DefaultSightFB
 import com.group16.mytrips.data.LocationLiveData
-import com.group16.mytrips.data.ModelClass
 import com.group16.mytrips.data.SightFB
-import com.group16.mytrips.data.User
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.tasks.await
-import java.text.SimpleDateFormat
 import java.util.Date
 import java.util.UUID
 import kotlin.math.roundToInt
 
 class CameraViewModel(application: Application) : AndroidViewModel(application) {
-    private val diameter = 50
+    private val radius = 70  // radius in meters
 
-
+    private val locationLiveData = LocationLiveData(application)
+    fun getLocationLiveData() = locationLiveData
+    fun startLocationUpdates() = {
+        ->
+        locationLiveData.startLocationUpdates()
+    }
 
     private val storage = FirebaseStorage.getInstance()
-    private val locationLiveData = LocationLiveData(application)
-
     private val firestore = FirebaseFirestore.getInstance()
+
+    private val defaultSightRef = firestore.collection("DefaultSightFB")
     private val collectionRef = firestore.collection("SightFB")
     private val userRef = firestore.collection("User")
     private val userId = "7T9VijHoW9vQTKnLlDhp"
-    private val defaultSightRef = firestore.collection("DefaultSightFB")
 
-    private lateinit var listenerRegistrationUser: ListenerRegistration
+    private val _defaultSightList = MutableStateFlow(emptyList<DefaultSightFB>().toMutableList())
+    val defaultSightList = _defaultSightList.asStateFlow()
 
-
-    private var _user = MutableStateFlow(User())
-    val user = _user.asStateFlow()
-
-
-    private val _sightList = MutableStateFlow<MutableList<SightFB>>(emptyList<SightFB>().toMutableList())
+    private val _sightList = MutableStateFlow(emptyList<SightFB>().toMutableList())
     val sightList = _sightList.asStateFlow()
+
 
     private var _alert = MutableStateFlow(false)
     val alert = _alert.asStateFlow()
-
     fun setAlert(shouldShow: Boolean) {
-        _alert.value = shouldShow
+        if (_currentSight.value.sightId != -1) _alert.value = shouldShow
+    }
+
+
+    private var _sightVisitedAlert = MutableStateFlow(false)
+    val sightVisitedAlert = _sightVisitedAlert.asStateFlow()
+    fun setSightVisitedAlert(visited: Boolean) {
+        _sightVisitedAlert.value = visited
     }
 
     private var _uriList = MutableStateFlow<List<String>>(emptyList())
     val uriList = _uriList.asStateFlow()
-
     fun setUriList(list: List<String>) {
         _uriList.value = list
+
     }
 
     private var _currentSight = MutableStateFlow(DefaultSightFB())
     val currentSight = _currentSight.asStateFlow()
-
     fun setCurrentSight(sight: DefaultSightFB) {
         _currentSight.value = sight
     }
+
+
     fun uploadPicturesToFirebaseStorage(
         newPictures: Boolean
     ) {
         val storageRef = storage.reference
-        if (_sightList.value.none { it.sightId == _currentSight.value.sightId }) {
+        if (_sightList.value.none { it.sightId == _currentSight.value.sightId } || _currentSight.value.sightId != -1) {
             viewModelScope.launch(Dispatchers.IO) {
                 try {
                     if (!newPictures) uploadNewSight(null, null)
@@ -91,7 +97,7 @@ class CameraViewModel(application: Application) : AndroidViewModel(application) 
                         }
                         Log.e("URL", downloadUrls[0])
 
-                        //val pictures = listOf(downloadUrls[0], downloadUrls[1])
+
                         uploadNewSight(downloadUrls[0], downloadUrls[1])
                     }
                 } catch (e: Exception) {
@@ -99,6 +105,7 @@ class CameraViewModel(application: Application) : AndroidViewModel(application) 
                 }
             }
         }
+        if (_sightList.value.filter { it.sightId == _currentSight.value.sightId }.isNotEmpty()) setSightVisitedAlert(true)
     }
 
     fun uploadNewSight(picture: String?, thumbnail: String?) {
@@ -114,45 +121,26 @@ class CameraViewModel(application: Application) : AndroidViewModel(application) 
                 sightName = defaultSight.sightName,
                 latitude = defaultSight.latitude,
                 longitude = defaultSight.longitude,
-                date = "30.05.2022"
+                date = getDate()
             )
             collectionRef.add(newSight)
+            updateXP(20)
         }
     }
 
     fun startListeningForData() {
-        startListeningForUser()
         startListeningForSightList()
         startListeningForDefaultSightList()
     }
 
     fun stopListeningForData() {
-        stopListeningForUser()
         stopListeningForSightList()
         stopListeningForDefaultSightList()
     }
 
-    fun startListeningForUser() {
-        listenerRegistrationUser =
-            userRef.document(userId).addSnapshotListener { snapshot, exception ->
-                if (exception != null) {
-                    // Handle error
-                    return@addSnapshotListener
-                }
 
-                val sight = snapshot?.toObject(User::class.java)
 
-                _user.value = sight ?: User()
-            }
-    }
 
-    fun stopListeningForUser() {
-        listenerRegistrationUser.remove()
-    }
-
-    private val _defaultSightList =
-        MutableStateFlow<MutableList<DefaultSightFB>>(emptyList<DefaultSightFB>().toMutableList())
-    val defaultSightList = _defaultSightList.asStateFlow()
 
     private lateinit var listenerRegistration: ListenerRegistration
 
@@ -170,10 +158,10 @@ class CameraViewModel(application: Application) : AndroidViewModel(application) 
             _defaultSightList.value = sights.toMutableList()
         }
     }
-
     fun stopListeningForDefaultSightList() {
         listenerRegistration.remove()
     }
+
 
 
     private lateinit var listenerRegistrationSights: ListenerRegistration
@@ -192,16 +180,11 @@ class CameraViewModel(application: Application) : AndroidViewModel(application) 
             _sightList.value = sights.toMutableList()
         }
     }
-
     fun stopListeningForSightList() {
         listenerRegistrationSights.remove()
     }
 
-    fun getLocationLiveData() = locationLiveData
-    fun startLocationUpdates() = {
-        ->
-        locationLiveData.startLocationUpdates()
-    }
+
     private fun distanceInMeter(
         startLat: Double,
         startLon: Double,
@@ -212,6 +195,31 @@ class CameraViewModel(application: Application) : AndroidViewModel(application) 
         Location.distanceBetween(startLat, startLon, endLat, endLon, results)
         return results[0].roundToInt()
     }
+
+
+    fun getSortedList(): StateFlow<MutableList<DefaultSightFB>> {
+        val location = getLocationLiveData().value
+        val observedLocationData = getLocationLiveData()
+        val list = _defaultSightList.asStateFlow()
+        list.value.forEach {
+            val l = observedLocationData
+
+            if (location == null) it.distance = null
+            else
+                it.distance = distanceInMeter(
+                    location.latitude,
+                    location.longitude,
+                    it.latitude,
+                    it.longitude
+                )
+        }
+        //list.value.sortedByDescending { it.distance }
+        list.value.sortBy { it.distance }
+        if (location != null) list.value.retainAll { it.distance!! <= radius }
+
+        return list
+    }
+
 
     fun updateXP(increment: Int) {
         val xp = "overallxp"
@@ -243,28 +251,18 @@ class CameraViewModel(application: Application) : AndroidViewModel(application) 
             }
     }
 
-    fun getSortedList(): StateFlow<MutableList<DefaultSightFB>> {
-        val location = getLocationLiveData().value
-        val observedLocationData = getLocationLiveData()
-        val list = _defaultSightList.asStateFlow()
-        list.value.forEach {
-            val l = observedLocationData
 
-            if (location == null) it.distance = null
-            else
-                it.distance = distanceInMeter(
-                    location.latitude,
-                    location.longitude,
-                    it.latitude,
-                    it.longitude
-                )
-        }
-        //list.value.sortedByDescending { it.distance }
-        list.value.sortBy { it.distance }
-        if (location != null) list.value.retainAll { it.distance!! <= diameter }
-
-        return list
+    fun getDate() : String {
+        val cal = Calendar.getInstance(TimeZone.getTimeZone("Europe/Berlin"))
+        cal.time = Date()
+        val year = cal.get(Calendar.YEAR)
+        val month = cal.get(Calendar.MONTH) + 1 //starts at zero
+        val day = cal.get(Calendar.DAY_OF_MONTH)
+        var dayString = day.toString()
+        var monthString = month.toString()
+        if (day < 10) dayString = "0$day"
+        if (month < 10) monthString = "0$monthString"
+        return "$dayString.$monthString.$year"
     }
-
 
 }

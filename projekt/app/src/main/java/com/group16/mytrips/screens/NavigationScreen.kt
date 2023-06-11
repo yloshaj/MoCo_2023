@@ -56,8 +56,10 @@ import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.sp
 import coil.compose.AsyncImage
 import coil.compose.SubcomposeAsyncImage
+import com.google.android.gms.maps.model.CameraPosition
 import com.google.android.gms.maps.model.LatLng
 import com.google.maps.android.compose.CameraPositionState
+import com.google.maps.android.compose.rememberCameraPositionState
 import com.group16.mytrips.data.DefaultSightFB
 import com.group16.mytrips.viewModel.NavigationViewModel
 import kotlin.math.roundToInt
@@ -68,10 +70,15 @@ fun NavigationScreen(
     navigationViewModel: NavigationViewModel,
     navigate: () -> Unit
 ) {
+
     LaunchedEffect(Unit) {
         navigationViewModel.startListeningForSightList()
     }
     val loc = navigationViewModel.getLocationLiveData().observeAsState()
+    /*
+    var cameraPosition = rememberCameraPositionState{
+        position = CameraPosition.fromLatLngZoom(LatLng(loc.value?.latitude ?: 51.0230970, loc.value?.longitude?:7.5643766), 14f)
+    }*/
     var sightList = navigationViewModel.getSortedList().collectAsState()
     var cameraPosition = navigationViewModel.getCameraPositionState()
 
@@ -84,7 +91,7 @@ fun NavigationScreen(
     )
 
     Box {
-        Text(text = loc.value.toString())
+        Text(text = loc.value.toString(), color = Color.White)
         //Maps()
         Column {
 
@@ -114,13 +121,7 @@ fun NavigationScreen(
     }
 }
 
-@Composable
-fun Maps() {
-    Box(modifier = Modifier.fillMaxSize()) {
-        Image(painter = painterResource(id = R.drawable.ic_fullmap), contentDescription = null)
-    }
 
-}
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -195,7 +196,7 @@ fun SearchBar(appViewModel: NavigationViewModel, cameraPosition: CameraPositionS
                         Card(
                             Modifier
                                 .fillMaxWidth()
-                                .heightIn(40.dp, 40.dp)
+                                .heightIn(40.dp)
                                 .clickable {
                                     appViewModel.moveCameraPosition(
                                         cameraPosition,

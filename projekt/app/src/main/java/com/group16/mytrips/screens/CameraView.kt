@@ -29,6 +29,7 @@ import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.heightIn
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.shape.CircleShape
@@ -39,6 +40,9 @@ import androidx.compose.material.icons.sharp.Lens
 import androidx.compose.material.icons.sharp.PhotoLibrary
 import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.Button
+import androidx.compose.material3.Card
+import androidx.compose.material3.CardDefaults
+import androidx.compose.material3.Divider
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.Text
@@ -58,6 +62,7 @@ import androidx.compose.ui.modifier.modifierLocalConsumer
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.LocalLifecycleOwner
 import androidx.compose.ui.res.stringResource
+import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.compose.ui.viewinterop.AndroidView
@@ -88,6 +93,7 @@ fun CameraView(
     val context = LocalContext.current
     LaunchedEffect(Unit) {
         viewModel.startListeningForData()
+        viewModel.setCurrentSight(DefaultSightFB(sightName = "Bitte wählen"))
         if (ContextCompat.checkSelfPermission(
                 context,
                 Manifest.permission.ACCESS_FINE_LOCATION
@@ -172,10 +178,12 @@ private fun CameraPreviewView(
     cameraUIAction: (CameraUIAction) -> Unit
 ) {
     val defaultSights = viewModel.getSortedList().collectAsState()
+    val currentSight by viewModel.currentSight.collectAsState()
+    /*
     var currentSight by remember {
         mutableStateOf(DefaultSightFB(sightName = "Choose Sight"))
     }
-
+    */
     var expanded by remember {
         mutableStateOf(false)
     }
@@ -201,6 +209,7 @@ private fun CameraPreviewView(
         preview.setSurfaceProvider(previewView.surfaceProvider)
     }
     val alert by viewModel.alert.collectAsState()
+    val sightVisited by viewModel.sightVisitedAlert.collectAsState()
 
     Box(modifier = Modifier.fillMaxSize()) {
         if (alert) {
@@ -219,6 +228,20 @@ private fun CameraPreviewView(
             )
         }
 
+        if (sightVisited) {
+            AlertDialog(
+                onDismissRequest = { viewModel.setSightVisitedAlert(false) },
+                confirmButton = {
+                    Button(
+                        onClick = { viewModel.setSightVisitedAlert(false) }) {
+                        Text(text = "OK")
+                    }
+                },
+                text = { Text(text = "Sie haben diese Sehenswürdigkeit schon besucht!") },
+
+            )
+        }
+
         AndroidView({ previewView }, modifier = Modifier.fillMaxSize()) {
 
         }
@@ -226,6 +249,7 @@ private fun CameraPreviewView(
 
 
         Column(modifier = Modifier.align(Alignment.TopCenter)) {
+
             Row(
                 modifier = Modifier
                     .fillMaxWidth()
@@ -251,15 +275,36 @@ private fun CameraPreviewView(
 
             }
             AnimatedVisibility(visible = expanded) {
-                Column(modifier = Modifier.fillMaxWidth()) {
+                Column(modifier = Modifier
+                    .fillMaxWidth()
+                    .padding(15.dp, 0.dp)
+                    .background(Color.Black)) {
 
-                    for (sight in defaultSights.value) Text(
-                        text = sight.sightName,
-                        modifier = Modifier.clickable {
-                            viewModel.setCurrentSight(sight)
-                            currentSight = sight
-                            expanded = !expanded
-                        })
+                    for (sight in defaultSights.value) {
+                        Box(
+                            modifier = Modifier
+                                .fillMaxWidth()
+                                .heightIn(30.dp)
+                                .background(Color.Black), contentAlignment = Alignment.CenterStart
+                        ) {
+                            Text(
+                                text = sight.sightName,
+                                modifier = Modifier
+                                    .padding(10.dp, 0.dp)
+                                    .clickable {
+                                        viewModel.setCurrentSight(sight)
+                                        //currentSight = sight
+                                        expanded = !expanded
+                                    },
+                                overflow = TextOverflow.Ellipsis,
+                                maxLines = 1,
+                                color = Color.White,
+                                fontSize = 20.sp
+                            )
+                        }
+                        Divider()
+                    }
+
                 }
             }
         }

@@ -12,7 +12,6 @@ import com.google.firebase.firestore.ListenerRegistration
 import com.google.maps.android.compose.CameraPositionState
 import com.group16.mytrips.data.DefaultSightFB
 import com.group16.mytrips.data.LocationLiveData
-import com.group16.mytrips.data.ModelClass
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.SharingStarted
@@ -26,17 +25,18 @@ import kotlin.math.roundToInt
 class NavigationViewModel(application: Application) : AndroidViewModel(application) {
 
     private val locationLiveData = LocationLiveData(application)
-    private val modelClass = ModelClass()
+
 
 
     private val firestore = FirebaseFirestore.getInstance()
     private val collectionRef = firestore.collection("DefaultSightFB")
 
-    private val _defaultSightList = MutableStateFlow<MutableList<DefaultSightFB>>(emptyList<DefaultSightFB>().toMutableList())
+    private val _defaultSightList = MutableStateFlow(emptyList<DefaultSightFB>().toMutableList())
     val defaultSightList = _defaultSightList.asStateFlow()
 
     private lateinit var listenerRegistration: ListenerRegistration
 
+    private var loc = listOf(0.0,0.0)
     fun startListeningForSightList() {
         listenerRegistration = collectionRef.addSnapshotListener { snapshot, error ->
             if (error != null) {
@@ -104,7 +104,7 @@ class NavigationViewModel(application: Application) : AndroidViewModel(applicati
 
     val sightListForQuery : StateFlow<List<DefaultSightFB>> = searchtext
         .combine(_defaultSightList) { text, sightList ->
-            if(text.isBlank()) {
+            if(text.isBlank() || text.length < 2) {
                 emptyList()
             } else {
                 sightList.filter {
@@ -141,8 +141,8 @@ class NavigationViewModel(application: Application) : AndroidViewModel(applicati
 
     fun getCameraPositionState() : CameraPositionState {
         val loc = getLocationLiveData()
-        return if (loc.value != null) CameraPositionState(CameraPosition(LatLng(loc.value!!.latitude, loc.value!!.longitude),14f,0f,0f))
-        else CameraPositionState(CameraPosition(LatLng(modelClass.defaultSight.latitude, modelClass.defaultSight.longitude),14f,0f,0f))
+        return if (loc.value != null) CameraPositionState(CameraPosition(LatLng(loc.value!!.latitude, loc.value!!.longitude), 14f,0f,0f))
+        else CameraPositionState(CameraPosition(LatLng(51.0230970, 7.5643766),14f,0f,0f))
     }
 
 

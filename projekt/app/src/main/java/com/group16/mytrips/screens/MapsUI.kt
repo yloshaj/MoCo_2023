@@ -14,8 +14,10 @@ import com.google.maps.android.compose.MarkerState
 import com.google.maps.android.compose.rememberCameraPositionState
 import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.runtime.livedata.observeAsState
+import androidx.compose.ui.graphics.Color
 
 import androidx.compose.ui.unit.dp
+import com.google.maps.android.compose.Circle
 import com.google.maps.android.compose.MapProperties
 import com.group16.mytrips.data.DefaultSightFB
 import com.group16.mytrips.data.LocationDetails
@@ -44,11 +46,20 @@ fun MapsSDK(
         contentPadding = PaddingValues(top = 70.dp)
     ) {
 
-        for (location in sightList.value) Marker(
-            MarkerState(LatLng(location.latitude, location.longitude)),
-            title = location.sightName,
-            icon = BitmapDescriptorFactory.defaultMarker(BitmapDescriptorFactory.HUE_AZURE)
-        )
+        for (location in sightList.value) {
+            Marker(
+                MarkerState(LatLng(location.latitude, location.longitude)),
+                title = location.sightName,
+                icon = BitmapDescriptorFactory.defaultMarker(BitmapDescriptorFactory.HUE_AZURE)
+            )
+            Circle(
+                center = LatLng(location.latitude, location.longitude),
+                radius = 70.0,
+                strokeColor = Color(59, 88, 145, 0),
+                strokeWidth = 2f,
+                fillColor = Color(11, 147, 41, 100)
+            )
+        }
 
 
     }

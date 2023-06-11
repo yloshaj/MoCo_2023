@@ -1,7 +1,6 @@
 package com.group16.mytrips.screens
 
 import androidx.compose.animation.AnimatedVisibility
-import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
@@ -17,7 +16,6 @@ import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.heightIn
-import androidx.compose.foundation.layout.offset
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.widthIn
@@ -53,12 +51,10 @@ import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.vectorResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextOverflow
-import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
-import coil.compose.AsyncImage
 import coil.compose.SubcomposeAsyncImage
-import com.group16.mytrips.R
+import com.group16.mytrips.data.Avatar
 import com.group16.mytrips.data.SightFB
 import com.group16.mytrips.viewModel.ProfileViewModel
 import kotlin.math.roundToInt
@@ -111,7 +107,7 @@ fun ProfileScreen(
     profileViewModel: ProfileViewModel,
     onItemClicked: (sightId: String) -> Unit
 ) {
-    val sights = profileViewModel.sightList.collectAsState()
+    val sights = profileViewModel.getSortedSightList().collectAsState()
     Box(
         modifier = Modifier
             .fillMaxSize()
@@ -142,7 +138,7 @@ fun ProfilePic(modifier: Modifier, id: Int) {
 
 @Composable
 fun ProfileHeader(profileViewModel: ProfileViewModel) {
-    val avatarList = profileViewModel.avatar.collectAsState()
+    val avatarList = profileViewModel.getFilteredAvatarList().collectAsState()
     val user by profileViewModel.user.collectAsState()
 
 
@@ -309,12 +305,16 @@ fun PreviewHeader(
     onItemClicked: (sightId: String) -> Unit,
     profileViewModel: ProfileViewModel
 ) {
-
+    val l = profileViewModel.getSortedSightList().collectAsState()
+    val av = profileViewModel.getFilteredAvatarList().collectAsState()
     LaunchedEffect(Unit) {
         profileViewModel.startListeningForData()
-    }
 
+    }
+    Text(text = l.value.size.toString())
+    Text(text = av.value.size.toString())
     ProfileScreen(profileViewModel, onItemClicked)
+    
 }
 
 
@@ -322,7 +322,7 @@ fun PreviewHeader(
 
 
 @Composable
-fun ProfileSelection1(onClick: (id: Int) -> Unit, avatarList: State<List<Int>>) {
+fun ProfileSelection1(onClick: (id: Int) -> Unit, avatarList: State<List<Avatar>>) {
 
     Column(
         modifier = Modifier
@@ -339,7 +339,7 @@ fun ProfileSelection1(onClick: (id: Int) -> Unit, avatarList: State<List<Int>>) 
 }
 
 @Composable
-fun TierGrid(modifier: Modifier, onClick: (id: Int) -> Unit, avatarList: State<List<Int>>) {
+fun TierGrid(modifier: Modifier, onClick: (id: Int) -> Unit, avatarList: State<List<Avatar>>) {
 
     Card(
         modifier = modifier, elevation = CardDefaults.cardElevation(5.dp),
@@ -363,7 +363,7 @@ fun TierGrid(modifier: Modifier, onClick: (id: Int) -> Unit, avatarList: State<L
 
             ) {
                 items(avatarList.value.size) { it ->
-                    val avatarId = avatarList.value[it]
+                    val avatarId = avatarList.value[it].path
                     Icon(
                         painter = painterResource(avatarId),
                         contentDescription = null, tint = Color.Unspecified,
