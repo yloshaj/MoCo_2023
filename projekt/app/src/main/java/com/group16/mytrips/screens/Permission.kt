@@ -1,10 +1,8 @@
 package com.group16.mytrips.screens
 
-import android.Manifest
+
 import android.app.Activity
-import android.content.Context
 import android.content.pm.PackageManager
-import android.os.strictmode.UnbufferedIoViolation
 import android.util.Log
 import androidx.activity.compose.rememberLauncherForActivityResult
 import androidx.activity.result.ActivityResultLauncher
@@ -18,14 +16,8 @@ import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.platform.LocalContext
-import androidx.compose.ui.tooling.preview.Preview
 import androidx.core.app.ActivityCompat
 import androidx.core.content.ContextCompat
-import com.google.accompanist.permissions.ExperimentalPermissionsApi
-import com.google.accompanist.permissions.rememberPermissionState
-import kotlinx.coroutines.android.awaitFrame
-import okhttp3.internal.wait
-import java.security.Permission
 
 
 

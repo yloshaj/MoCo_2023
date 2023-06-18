@@ -10,7 +10,6 @@ import com.google.maps.android.compose.CameraPositionState
 import com.group16.mytrips.data.DefaultSightFB
 import com.group16.mytrips.data.Firebase
 import com.group16.mytrips.data.LocationLiveData
-import com.group16.mytrips.data.SightFB
 import com.group16.mytrips.misc.distanceInMeter
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers

@@ -13,7 +13,6 @@ import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.livedata.observeAsState
 import androidx.compose.ui.graphics.Color
-
 import androidx.compose.ui.unit.dp
 import com.google.maps.android.compose.Circle
 import com.google.maps.android.compose.MapProperties

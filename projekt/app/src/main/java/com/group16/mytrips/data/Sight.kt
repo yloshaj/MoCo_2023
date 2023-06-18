@@ -1,7 +1,7 @@
 package com.group16.mytrips.data
 
 import android.net.Uri
-import kotlinx.serialization.Serializable
+
 
 data class Sight(
     val sightId: Int,
