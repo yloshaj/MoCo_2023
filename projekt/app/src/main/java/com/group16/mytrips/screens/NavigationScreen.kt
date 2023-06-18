@@ -50,8 +50,10 @@ import androidx.compose.ui.platform.LocalFocusManager
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.sp
 import coil.compose.SubcomposeAsyncImage
+import com.google.android.gms.maps.model.CameraPosition
 import com.google.android.gms.maps.model.LatLng
 import com.google.maps.android.compose.CameraPositionState
+import com.google.maps.android.compose.rememberCameraPositionState
 import com.group16.mytrips.data.DefaultSightFB
 import com.group16.mytrips.viewModel.NavigationViewModel
 import kotlin.math.roundToInt
@@ -67,12 +69,12 @@ fun NavigationScreen(
         navigationViewModel.startListeningForData()
     }
     val loc = navigationViewModel.getLocationLiveData().observeAsState()
-    /*
+
     var cameraPosition = rememberCameraPositionState{
         position = CameraPosition.fromLatLngZoom(LatLng(loc.value?.latitude ?: 51.0230970, loc.value?.longitude?:7.5643766), 14f)
-    }*/
+    }
     var sightList = navigationViewModel.getSortedList().collectAsState()
-    var cameraPosition = navigationViewModel.getCameraPositionState()
+    //var cameraPosition = navigationViewModel.getCameraPositionState()
 
 
     LaunchPermission(
@@ -81,7 +83,9 @@ fun NavigationScreen(
         rationale = "Location needed for navigation",
         navigate = navigate
     )
-
+    LaunchedEffect(loc.value == null) {
+        navigationViewModel.moveCameraPosition(cameraPosition, LatLng(loc.value?.latitude ?: 51.0230970, loc.value?.longitude ?: 7.5643766))
+    }
     Box (modifier = Modifier
         .fillMaxSize()
         .background(Color.White)) {
@@ -198,7 +202,9 @@ fun SearchBar(navigationViewModel: NavigationViewModel, cameraPosition: CameraPo
                                             sightListForQuery[it].latitude,
                                             sightListForQuery[it].longitude
                                         )
-                                    ); focusManager.clearFocus(); navigationViewModel.setIsSearching(false)
+                                    ); focusManager.clearFocus(); navigationViewModel.setIsSearching(
+                                    false
+                                )
                                     navigationViewModel.onSearchTextChange("")
                                 },
                             shape = ShapeDefaults.ExtraSmall,
