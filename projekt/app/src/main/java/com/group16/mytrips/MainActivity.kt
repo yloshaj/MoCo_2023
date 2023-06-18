@@ -11,6 +11,8 @@ import androidx.compose.material.icons.rounded.Person
 import androidx.compose.material.icons.rounded.Place
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Scaffold
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.res.vectorResource
@@ -22,8 +24,9 @@ import com.group16.mytrips.screens.Navigation
 import com.group16.mytrips.screens.NavigationRoute
 
 import com.group16.mytrips.ui.theme.MyTripsTheme
-import com.group16.mytrips.viewModel.NavigationViewModel
 import com.group16.mytrips.viewModel.CameraViewModel
+import com.group16.mytrips.viewModel.LoginViewModel
+import com.group16.mytrips.viewModel.NavigationViewModel
 import com.group16.mytrips.viewModel.ProfileViewModel
 
 
@@ -38,12 +41,17 @@ class MainActivity : ComponentActivity() {
             val profileViewModel = ProfileViewModel()
             val cameraViewModel = CameraViewModel(this.application)
             val appViewModel = NavigationViewModel(this.application)
+            val loginViewModel = LoginViewModel()
 
 
             MyTripsTheme {
                 val navController = rememberNavController()
+                val showBottomBar = rememberSaveable {
+                    mutableStateOf(true)
+                }
                 Scaffold(
                     bottomBar = {
+                        if(showBottomBar.value) {
                         BottomNavigationBar(
                             items = listOf(
                                 BottomNavigationItem(
@@ -68,7 +76,7 @@ class MainActivity : ComponentActivity() {
                                     popUpTo(NavigationRoute.ProfileScreen.route)
                                 }
                             })
-                    }
+                    }}
                 ) { innerPadding ->
                     Box(
                         modifier = Modifier
@@ -81,7 +89,7 @@ class MainActivity : ComponentActivity() {
                                 )
                             )
                     ) {
-                        Navigation(navController = navController, appViewModel, profileViewModel, cameraViewModel)
+                        Navigation(navController = navController, appViewModel, profileViewModel, cameraViewModel, loginViewModel, showBottomBar)
                     }
                 }
 

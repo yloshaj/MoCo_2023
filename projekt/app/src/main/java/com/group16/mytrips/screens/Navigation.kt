@@ -1,12 +1,14 @@
 package com.group16.mytrips.screens
 
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.MutableState
 import androidx.navigation.NavHostController
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import com.example.articlecamera.Cam.CameraView
-import com.group16.mytrips.viewModel.NavigationViewModel
 import com.group16.mytrips.viewModel.CameraViewModel
+import com.group16.mytrips.viewModel.LoginViewModel
+import com.group16.mytrips.viewModel.NavigationViewModel
 import com.group16.mytrips.viewModel.ProfileViewModel
 
 sealed class NavigationRoute {
@@ -25,18 +27,24 @@ sealed class NavigationRoute {
     object DetailedSightScreen {
         val route = "DetailedSightScreen"
     }
+
+    object LoginScreen {
+        val route = "LoginScreen"
+    }
     
 }
 
 @Composable
 fun Navigation(
     navController: NavHostController,
-    appViewModel: NavigationViewModel,
+    navigationViewModel: NavigationViewModel,
     profileViewModel: ProfileViewModel,
-    cameraViewModel: CameraViewModel
+    cameraViewModel: CameraViewModel,
+    loginViewModel: LoginViewModel,
+    showBottomBar: MutableState<Boolean>
 
 ) {
-    NavHost(navController = navController, startDestination = NavigationRoute.ProfileScreen.route) {
+    NavHost(navController = navController, startDestination = NavigationRoute.LoginScreen.route) {
         composable(NavigationRoute.ProfileScreen.route) {
             PreviewHeader ({ sightId ->
                 navController.navigate(NavigationRoute.DetailedSightScreen.route + "/ $sightId") {
@@ -45,7 +53,7 @@ fun Navigation(
             }, profileViewModel)
         }
         composable(NavigationRoute.NavigationScreen.route) {
-            NavigationScreen(appViewModel) {
+            NavigationScreen(navigationViewModel) {
                 navController.navigate(
                     NavigationRoute.NavigationScreen.route
                 ) {popUpTo(NavigationRoute.ProfileScreen.route)}
@@ -56,6 +64,13 @@ fun Navigation(
         }
         composable(NavigationRoute.DetailedSightScreen.route + "/ {sightId}") { navBackStackEntry ->
             SightScreen(navBackStackEntry.arguments?.getString("sightId"), profileViewModel)
+        }
+        composable(NavigationRoute.LoginScreen.route) {
+            Login(viewModel = loginViewModel, showBottomBar) {
+                navController.navigate(
+                    NavigationRoute.ProfileScreen.route
+                ) {popUpTo(NavigationRoute.ProfileScreen.route)}
+            }
         }
 
     }
