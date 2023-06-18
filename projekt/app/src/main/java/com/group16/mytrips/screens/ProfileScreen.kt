@@ -107,7 +107,7 @@ fun ProfileScreen(
     profileViewModel: ProfileViewModel,
     onItemClicked: (sightId: String) -> Unit
 ) {
-    val sights = profileViewModel.getSortedSightList().collectAsState()
+    val sights = profileViewModel.sightList.collectAsState()
     Box(
         modifier = Modifier
             .fillMaxSize()
@@ -138,7 +138,7 @@ fun ProfilePic(modifier: Modifier, id: Int) {
 
 @Composable
 fun ProfileHeader(profileViewModel: ProfileViewModel) {
-    val avatarList = profileViewModel.getFilteredAvatarList().collectAsState()
+    val avatarList = profileViewModel.avatarList.collectAsState()
     val user by profileViewModel.user.collectAsState()
 
 
@@ -305,14 +305,14 @@ fun PreviewHeader(
     onItemClicked: (sightId: String) -> Unit,
     profileViewModel: ProfileViewModel
 ) {
-    val l = profileViewModel.getSortedSightList().collectAsState()
-    val av = profileViewModel.getFilteredAvatarList().collectAsState()
+    val l = profileViewModel.sightList.collectAsState()
+    val av = profileViewModel.avatarList.collectAsState()
     LaunchedEffect(Unit) {
         profileViewModel.startListeningForData()
 
     }
-    Text(text = l.value.size.toString())
-    Text(text = av.value.size.toString())
+    //Text(text = l.value.size.toString())
+    //Text(text = av.value.size.toString())
     ProfileScreen(profileViewModel, onItemClicked)
     
 }

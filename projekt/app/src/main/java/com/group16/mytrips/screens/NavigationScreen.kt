@@ -2,7 +2,6 @@ package com.group16.mytrips.screens
 
 import android.Manifest
 import androidx.compose.animation.AnimatedVisibility
-import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.gestures.detectTapGestures
@@ -36,31 +35,23 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.State
 import androidx.compose.runtime.collectAsState
-import androidx.compose.runtime.mutableStateOf
-import androidx.compose.runtime.remember
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.res.painterResource
-import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import com.group16.mytrips.R
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.livedata.observeAsState
-import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.draw.alpha
 import androidx.compose.ui.draw.scale
 import androidx.compose.ui.input.pointer.pointerInput
-import androidx.compose.ui.modifier.modifierLocalConsumer
 import androidx.compose.ui.platform.LocalFocusManager
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.sp
-import coil.compose.AsyncImage
 import coil.compose.SubcomposeAsyncImage
-import com.google.android.gms.maps.model.CameraPosition
 import com.google.android.gms.maps.model.LatLng
 import com.google.maps.android.compose.CameraPositionState
-import com.google.maps.android.compose.rememberCameraPositionState
 import com.group16.mytrips.data.DefaultSightFB
 import com.group16.mytrips.viewModel.NavigationViewModel
 import kotlin.math.roundToInt
@@ -73,7 +64,7 @@ fun NavigationScreen(
 ) {
 
     LaunchedEffect(Unit) {
-        navigationViewModel.startListeningForSightList()
+        navigationViewModel.startListeningForData()
     }
     val loc = navigationViewModel.getLocationLiveData().observeAsState()
     /*
@@ -91,7 +82,9 @@ fun NavigationScreen(
         navigate = navigate
     )
 
-    Box (modifier = Modifier.fillMaxSize().background(Color.White)) {
+    Box (modifier = Modifier
+        .fillMaxSize()
+        .background(Color.White)) {
         Text(text = loc.value.toString(), color = Color.White)
         //Maps()
         Column {
@@ -126,14 +119,14 @@ fun NavigationScreen(
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
-fun SearchBar(appViewModel: NavigationViewModel, cameraPosition: CameraPositionState) {
-    val isSearching by appViewModel.isSearching.collectAsState()
-    val searchText by appViewModel.searchtext.collectAsState()
-    val sightListForQuery by appViewModel.sightListForQuery.collectAsState()
+fun SearchBar(navigationViewModel: NavigationViewModel, cameraPosition: CameraPositionState) {
+    val isSearching by navigationViewModel.isSearching.collectAsState()
+    val searchText by navigationViewModel.searchtext.collectAsState()
+    val sightListForQuery by navigationViewModel.sightListForQuery.collectAsState()
 
     val focusManager = LocalFocusManager.current
     Column(modifier = Modifier.pointerInput(Unit) {
-        detectTapGestures(onTap = { focusManager.clearFocus(); appViewModel.setIsSearching(false) })
+        detectTapGestures(onTap = { focusManager.clearFocus(); navigationViewModel.setIsSearching(false) })
     }) {
         Card(
             modifier = Modifier
@@ -152,8 +145,8 @@ fun SearchBar(appViewModel: NavigationViewModel, cameraPosition: CameraPositionS
                     ),
                     value = searchText,
                     onValueChange = {
-                        appViewModel.onSearchTextChange(it)
-                        appViewModel.setIsSearching(true)
+                        navigationViewModel.onSearchTextChange(it)
+                        navigationViewModel.setIsSearching(true)
                     },
                     modifier = Modifier
                         .weight(7f)
@@ -165,8 +158,8 @@ fun SearchBar(appViewModel: NavigationViewModel, cameraPosition: CameraPositionS
 
                         IconButton(onClick = {
                             focusManager.clearFocus()
-                            appViewModel.onSearchTextChange("")
-                            appViewModel.setIsSearching(false)
+                            navigationViewModel.onSearchTextChange("")
+                            navigationViewModel.setIsSearching(false)
 
                         }) {
                             Icon(
@@ -199,14 +192,14 @@ fun SearchBar(appViewModel: NavigationViewModel, cameraPosition: CameraPositionS
                                 .fillMaxWidth()
                                 .heightIn(40.dp)
                                 .clickable {
-                                    appViewModel.moveCameraPosition(
+                                    navigationViewModel.moveCameraPosition(
                                         cameraPosition,
                                         LatLng(
                                             sightListForQuery[it].latitude,
                                             sightListForQuery[it].longitude
                                         )
-                                    ); focusManager.clearFocus(); appViewModel.setIsSearching(false)
-                                    appViewModel.onSearchTextChange("")
+                                    ); focusManager.clearFocus(); navigationViewModel.setIsSearching(false)
+                                    navigationViewModel.onSearchTextChange("")
                                 },
                             shape = ShapeDefaults.ExtraSmall,
                             colors = CardDefaults.cardColors(Color.White),

@@ -89,7 +89,7 @@ class LocationLiveData(var context: Context) : LiveData<LocationDetails>() {
     }
 
     companion object {
-        val INTERVAL: Long = 2000
+        const val INTERVAL: Long = 500
         val locatonRequest = LocationRequest.Builder(INTERVAL).build()
     }
 }

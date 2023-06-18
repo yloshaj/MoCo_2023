@@ -1,136 +1,61 @@
 package com.group16.mytrips.viewModel
 
-import android.util.Log
+import com.group16.mytrips.data.Firebase
 import androidx.lifecycle.ViewModel
-import com.google.firebase.firestore.FirebaseFirestore
-import com.google.firebase.firestore.ListenerRegistration
-import com.google.firebase.firestore.SetOptions
+import androidx.lifecycle.viewModelScope
 import com.group16.mytrips.data.Avatar
 import com.group16.mytrips.data.SightFB
 import com.group16.mytrips.data.User
+import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.MutableStateFlow
-import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
+import kotlinx.coroutines.launch
+
 
 class ProfileViewModel : ViewModel() {
 
 
-    private val firestore = FirebaseFirestore.getInstance()
-    private val collectionRef = firestore.collection("SightFB")
-    private val userRef = firestore.collection("User")
-    private val userId = "7T9VijHoW9vQTKnLlDhp"
-    private val avatarRef = firestore.collection("avatar")
-
-
-
-    private var _user = MutableStateFlow(User())
+    private val _user = MutableStateFlow(User())
     val user = _user.asStateFlow()
 
-
-    private var _avatarList = MutableStateFlow(emptyList<Avatar>().toMutableList())
+    private val _avatarList = MutableStateFlow(emptyList<Avatar>())
     val avatarList = _avatarList.asStateFlow()
 
+    private val _sightList = MutableStateFlow(emptyList<SightFB>())
+    val sightList = _sightList.asStateFlow()
 
-    fun stopListeningForAvatar() {
-        listenerRegistrationAvatar.remove()
+
+    fun startListeningForUser() {
+        Firebase.startListeningForUser { user ->
+            viewModelScope.launch(Dispatchers.Default) {
+                _user.value = user
+            }
+        }
     }
+
+    fun startListeningForSightList() {
+        Firebase.startListeningForSightList { sights ->
+            viewModelScope.launch(Dispatchers.Default) {
+                _sightList.value = sights
+            }
+        }
+    }
+
+    fun startListeningForAvatarList() {
+        Firebase.startListeningForAvatarList { avatare ->
+            viewModelScope.launch(Dispatchers.Default) {
+                _avatarList.value = avatare
+            }
+        }
+    }
+
+    fun updateAvatar(path: Int) = viewModelScope.launch(Dispatchers.Default) {
+        Firebase.updateAvatar(path)
+    }
+
     fun startListeningForData() {
         startListeningForUser()
         startListeningForSightList()
-        startListeningForAvatar()
+        startListeningForAvatarList()
     }
-
-    fun stopListeningForData() {
-        stopListeningForUser()
-        stopListeningForSightList()
-        stopListeningForAvatar()
-    }
-
-    private lateinit var listenerRegistrationUser: ListenerRegistration
-    fun startListeningForUser() {
-        listenerRegistrationUser =
-            userRef.document(userId).addSnapshotListener { snapshot, exception ->
-                if (exception != null) {
-                    // Handle error
-                    return@addSnapshotListener
-                }
-
-                val sight = snapshot?.toObject(User::class.java)
-
-                _user.value = sight ?: User()
-            }
-    }
-
-    fun stopListeningForUser() {
-        listenerRegistrationUser.remove()
-    }
-
-    private lateinit var listenerRegistrationAvatar: ListenerRegistration
-    fun startListeningForAvatar() {
-        listenerRegistrationAvatar =
-            avatarRef.addSnapshotListener { snapshot, error ->
-                if (error != null) {
-                    // Handle error
-                    return@addSnapshotListener
-                }
-
-                val avatare = snapshot?.documents?.mapNotNull { document ->
-                    document.toObject(Avatar::class.java)
-                } ?: emptyList()
-
-                _avatarList.value = avatare.toMutableList()
-            }
-    }
-
-
-
-    private val _sightList = MutableStateFlow(emptyList<SightFB>().toMutableList())
-    val sightList = _sightList.asStateFlow()
-
-    private lateinit var listenerRegistrationSights: ListenerRegistration
-
-    fun startListeningForSightList() {
-        listenerRegistrationSights = collectionRef.addSnapshotListener { snapshot, error ->
-            if (error != null) {
-                // Handle error
-                return@addSnapshotListener
-            }
-
-            val sights = snapshot?.documents?.mapNotNull { document ->
-                document.toObject(SightFB::class.java)
-            } ?: emptyList()
-
-            _sightList.value = sights.toMutableList()
-        }
-    }
-    fun stopListeningForSightList() {
-        listenerRegistrationSights.remove()
-    }
-
-
-    fun updateAvatar(localPath: Int) {
-        val documentRef = userRef.document(userId)
-        val data = hashMapOf(
-            "avatar" to localPath
-        )
-        documentRef.set(data, SetOptions.merge())
-            .addOnSuccessListener { Log.d("Firebase", "Avatar uploaded") }
-            .addOnFailureListener { Log.e("Firebase", "$it") }
-    }
-    fun getSortedSightList(): StateFlow<List<SightFB>> {
-        val sortedSightList = _sightList.asStateFlow()
-        sortedSightList.value.sortByDescending {
-            (it.date.substring(6, 10).toInt() * 10000) + (it.date.substring(3, 5)
-                .toInt() * 100) + it.date.substring(0, 2).toInt()
-        }
-        return sortedSightList
-    }
-
-
-    fun getFilteredAvatarList(): StateFlow<MutableList<Avatar>> {
-        val list = _avatarList.asStateFlow()
-        list.value.retainAll { it.level <= _user.value.overallxp/100 }
-        return list
-    }
-
 }

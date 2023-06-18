@@ -41,22 +41,13 @@ data class DefaultSightFB(
     val sightName: String = "",
     val latitude: Double = -1.0,
     val longitude: Double = -1.0,
-    var distance: Int? = null
-
-){
-    fun doesNatchSearchQuery(query: String): Boolean {
-        val matchingCombinations = listOf(
-            sightName,
-            "$latitude$longitude",
-            "$latitude $longitude",
-            "$latitude, $longitude"
-        )
-        return matchingCombinations.any { it.contains(query, ignoreCase = true) }
-    }
-}
+    var distance: Int? = null,
+    var visited: Boolean = false
+)
 
 data class SightFB(
     val sightId: Int = -1,
+    val userId: String = "",
     var picture: String? = null,
     var thumbnail: String? = null,
     val sightName: String = "",

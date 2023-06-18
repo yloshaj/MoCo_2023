@@ -40,8 +40,6 @@ import androidx.compose.material.icons.sharp.Lens
 import androidx.compose.material.icons.sharp.PhotoLibrary
 import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.Button
-import androidx.compose.material3.Card
-import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.Divider
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
@@ -58,7 +56,6 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.vector.ImageVector
-import androidx.compose.ui.modifier.modifierLocalConsumer
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.LocalLifecycleOwner
 import androidx.compose.ui.res.stringResource
@@ -76,7 +73,6 @@ import com.group16.mytrips.data.getOutputDirectory
 import com.group16.mytrips.data.takePicture
 import com.group16.mytrips.screens.LaunchPermission
 import com.group16.mytrips.viewModel.CameraViewModel
-import kotlinx.coroutines.flow.StateFlow
 import java.io.IOException
 
 @Composable
@@ -259,10 +255,11 @@ private fun CameraPreviewView(
 
                 verticalAlignment = Alignment.CenterVertically
             ) {
-
+                var fColor = Color.White
+                if(currentSight.visited) fColor = Color.Red
                 Text(
                     text = currentSight.sightName,
-                    color = Color.White,
+                    color = fColor,
                     fontSize = 24.sp,
                     modifier = Modifier
                         .padding(8.dp)
@@ -281,6 +278,8 @@ private fun CameraPreviewView(
                     .background(Color.Black)) {
 
                     for (sight in defaultSights.value) {
+                        var fontColor = Color.White
+                        if (sight.visited) fontColor = Color.Red
                         Box(
                             modifier = Modifier
                                 .fillMaxWidth()
@@ -298,7 +297,7 @@ private fun CameraPreviewView(
                                     },
                                 overflow = TextOverflow.Ellipsis,
                                 maxLines = 1,
-                                color = Color.White,
+                                color = fontColor,
                                 fontSize = 20.sp
                             )
                         }
