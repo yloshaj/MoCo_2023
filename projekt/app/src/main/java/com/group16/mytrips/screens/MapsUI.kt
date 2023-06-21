@@ -1,5 +1,8 @@
 package com.group16.mytrips.screens
 
+import android.graphics.BitmapFactory
+import android.graphics.drawable.BitmapDrawable
+import androidx.appcompat.content.res.AppCompatResources
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.State
 import androidx.compose.ui.Modifier
@@ -13,10 +16,14 @@ import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.livedata.observeAsState
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.unit.dp
+import androidx.core.graphics.drawable.toBitmap
 import com.google.maps.android.compose.Circle
 import com.google.maps.android.compose.MapProperties
+import com.group16.mytrips.R
 import com.group16.mytrips.data.DefaultSightFB
+import com.group16.mytrips.misc.makeTransparent
 import com.group16.mytrips.viewModel.NavigationViewModel
 
 
@@ -34,7 +41,7 @@ fun MapsSDK(
         isMyLocationEnabled = loc.value != null,
 
         )
-
+    //val iconasd = AppCompatResources.getDrawable(LocalContext.current, R.drawable.ic_locpoint)?.toBitmap(70,115)?: throw Exception("Could Not find Resource")
     GoogleMap(
         modifier = modifier,
         cameraPositionState = cameraPosition,
@@ -44,16 +51,19 @@ fun MapsSDK(
 
         for (location in sightList.value) {
             var icon = BitmapDescriptorFactory.defaultMarker(BitmapDescriptorFactory.HUE_AZURE)
-            if(!location.visited) {
-                Circle(
-                    center = LatLng(location.latitude, location.longitude),
-                    radius = radius.value.toDouble(),
-                    strokeColor = Color(59, 88, 145, 0),
-                    strokeWidth = 2f,
-                    fillColor = Color(11, 147, 41, 100)
-                )
+            var alpha = 100
+            if(location.visited) {
+                icon = BitmapDescriptorFactory.defaultMarker(BitmapDescriptorFactory.HUE_RED)
+                alpha = 25
             }
-            else icon = BitmapDescriptorFactory.defaultMarker(BitmapDescriptorFactory.HUE_RED)
+
+            Circle(
+                center = LatLng(location.latitude, location.longitude),
+                radius = radius.value.toDouble(),
+                strokeColor = Color(59, 88, 145, 0),
+                strokeWidth = 2f,
+                fillColor = Color(11, 147, 41, alpha)
+            )
             Marker(
                 MarkerState(LatLng(location.latitude, location.longitude)),
                 title = location.sightName,

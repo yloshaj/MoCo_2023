@@ -281,8 +281,10 @@ fun LocationCard(
                 horizontalArrangement = Arrangement.SpaceEvenly,
                 modifier = Modifier.fillMaxSize()
             ) {
+                var locPoint = R.drawable.ic_locpoint
+                if (sight.visited) locPoint = R.drawable.ic_locpoint_visited
                 Icon(
-                    painter = painterResource(id = R.drawable.ic_locpoint),
+                    painter = painterResource(id = locPoint),
                     contentDescription = "Blue Location Point",
                     tint = Color.Unspecified
                 )

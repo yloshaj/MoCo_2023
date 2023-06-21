@@ -11,7 +11,7 @@ import kotlinx.coroutines.launch
 
 class LoginViewModel: ViewModel() {
 
-    private val _userList = MutableStateFlow(emptyList<User>().toMutableList())
+    private val _userList = MutableStateFlow(emptyList<User>())
     val userList = _userList.asStateFlow()
 
     private val _currentUser = MutableStateFlow(User())
@@ -24,15 +24,9 @@ class LoginViewModel: ViewModel() {
     fun startListeningUserList() {
         Firebase.startListeningForUserList { userList ->
             viewModelScope.launch(Dispatchers.Default) {
-                _userList.value = userList as MutableList<User>
+                _userList.value = userList
             }
         }
-    }
-    private val _bottomBarEnabled = MutableStateFlow(true)
-    val bottomBarEnabled = _bottomBarEnabled.asStateFlow()
-
-    fun setBottomBarEnabled(isEnabled: Boolean) {
-        _bottomBarEnabled.value = isEnabled
     }
 
     fun setUserId() {

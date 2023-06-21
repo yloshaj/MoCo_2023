@@ -7,7 +7,6 @@ import androidx.lifecycle.viewModelScope
 import com.group16.mytrips.data.DefaultSightFB
 import com.group16.mytrips.data.Firebase
 import com.group16.mytrips.data.LocationLiveData
-import com.group16.mytrips.data.SightFB
 import com.group16.mytrips.misc.distanceInMeter
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.MutableStateFlow
@@ -30,8 +29,6 @@ class CameraViewModel(application: Application): AndroidViewModel(application) {
     private val _defaultSightList = MutableStateFlow(emptyList<DefaultSightFB>().toMutableList())
     val defaultSightList = _defaultSightList.asStateFlow()
 
-    private val _sightList = MutableStateFlow(emptyList<SightFB>())
-    val sightList = _sightList.asStateFlow()
 
     private var _currentSight = MutableStateFlow(DefaultSightFB())
     val currentSight = _currentSight.asStateFlow()
@@ -70,13 +67,6 @@ class CameraViewModel(application: Application): AndroidViewModel(application) {
         }
     }
 
-    fun startListeningForSightList() {
-        Firebase.startListeningForSightList { sights ->
-            viewModelScope.launch(Dispatchers.Default) {
-                _sightList.value = sights
-            }
-        }
-    }
 
     fun startListeningForRadius() {
         Firebase.startListeningForRadius { radius ->
@@ -87,20 +77,19 @@ class CameraViewModel(application: Application): AndroidViewModel(application) {
     }
 
     fun startListeningForData() {
-        startListeningForSightList()
         startListeningForDefaultSightList()
         startListeningForRadius()
     }
 
-    fun uploadPicturesToFirebaseStorage(newPictures: Boolean) {
-        val uriList = _uriList.value
-        if (_sightList.value.none { it.sightId == _currentSight.value.sightId } || _currentSight.value.sightId != -1) {
+    fun uploadNewSight(newPictures: Boolean) {
+        if (!alreadyVisited()) {
             viewModelScope.launch(Dispatchers.IO) {
+                _currentSight.value.visited = true
                 try {
                     if (!newPictures) {
                         Firebase.uploadNewSight(null, null, _currentSight.value)
                     } else {
-                        val downloadUrls = uriList.map { uri ->
+                        val downloadUrls = _uriList.value.map { uri ->
                             Firebase.uploadImage(uri)
                         }
                         Firebase.uploadNewSight(
@@ -119,11 +108,8 @@ class CameraViewModel(application: Application): AndroidViewModel(application) {
 
     fun getSortedList(): StateFlow<MutableList<DefaultSightFB>> {
         val location = getLocationLiveData().value
-        val observedLocationData = getLocationLiveData()
         val list = _defaultSightList.asStateFlow()
         list.value.forEach {
-            val l = observedLocationData
-
             if (location == null) it.distance = null
             else
                 it.distance = distanceInMeter(
@@ -133,7 +119,6 @@ class CameraViewModel(application: Application): AndroidViewModel(application) {
                     it.longitude
                 )
         }
-        //list.value.sortedByDescending { it.distance }
         list.value.sortBy { it.distance }
         if (location != null) list.value.retainAll { it.distance!! <= _radius.value }
 

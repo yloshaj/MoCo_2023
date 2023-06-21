@@ -250,8 +250,6 @@ object Firebase {
     }
 
 
-
-
     fun startListeningForSightList(
         listener: (List<SightFB>) -> Unit
     ): ListenerRegistration {
@@ -271,29 +269,5 @@ object Firebase {
         }
     }
 
-    fun stopListeningForSightList() {
-        TODO("Not yet implemented")
-    }
-    /*
-    fun stopListeningForUserList() {
-        TODO("Not yet implemented")
-    }
-
-    fun stopListeningForDefaultSightList() {
-        TODO("Not yet implemented")
-    }
-
-    fun stopListeningForAvatarList() {
-        TODO("Not yet implemented")
-    }
-
-    fun stopListeningForUser() {
-        TODO("Not yet implemented")
-    }
-
-    fun stopListeningForRadius() {
-        TODO("Not yet implemented")
-    }
-    */
 
 }

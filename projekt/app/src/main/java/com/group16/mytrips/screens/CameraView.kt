@@ -213,12 +213,12 @@ private fun CameraPreviewView(
                 onDismissRequest = { viewModel.setAlert(false) },
                 confirmButton = {
                     Button(
-                        onClick = { viewModel.setAlert(false); viewModel.uploadPicturesToFirebaseStorage(true) }) {
+                        onClick = { viewModel.setAlert(false); viewModel.uploadNewSight(true) }) {
                         Text(text = "Ja")
                     }
                 },
                 text = { Text(text = "Dieses Bild verwenden? Ansonsten wird das Defaultbild verwendet") },
-                dismissButton = { Button(onClick = { viewModel.setAlert(false); viewModel.uploadPicturesToFirebaseStorage(false)}) {
+                dismissButton = { Button(onClick = { viewModel.setAlert(false); viewModel.uploadNewSight(false)}) {
                     Text(text = "Nein")
                 }}
             )
@@ -256,7 +256,7 @@ private fun CameraPreviewView(
                 verticalAlignment = Alignment.CenterVertically
             ) {
                 var fColor = Color.White
-                if(currentSight.visited) fColor = Color.Red
+                if(currentSight.visited) fColor = Color.DarkGray
                 Text(
                     text = currentSight.sightName,
                     color = fColor,
@@ -279,7 +279,7 @@ private fun CameraPreviewView(
 
                     for (sight in defaultSights.value) {
                         var fontColor = Color.White
-                        if (sight.visited) fontColor = Color.Red
+                        if (sight.visited) fontColor = Color.DarkGray
                         Box(
                             modifier = Modifier
                                 .fillMaxWidth()

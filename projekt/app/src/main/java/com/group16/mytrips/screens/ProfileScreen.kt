@@ -283,7 +283,7 @@ fun SightCard(sight: SightFB, onItemClicked: (sightId: String) -> Unit) {
                     maxLines = 2,
                 )
             }
-            Text(text = sight.date, fontSize = 14.sp, fontWeight = FontWeight.Bold)
+            Text(text = sight.date.substring(0,10), fontSize = 14.sp, fontWeight = FontWeight.Bold)
             Text(
                 text = "${sight.latitude}, ${sight.longitude}",
                 fontSize = 13.sp,
