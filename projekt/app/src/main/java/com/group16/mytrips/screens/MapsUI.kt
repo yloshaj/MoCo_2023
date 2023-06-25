@@ -52,13 +52,15 @@ fun MapsSDK(
 
         for (location in sightList.value) {
             //var icon = BitmapDescriptorFactory.defaultMarker(BitmapDescriptorFactory.HUE_AZURE)
-            var icon = AppCompatResources.getDrawable(LocalContext.current, location.pin)?.toBitmap()?: throw Exception("Could Not find Resource")
+            val context = LocalContext.current
+            val resourceId = context.resources.getIdentifier(location.pin, "drawable", context.packageName)
+            var icon = AppCompatResources.getDrawable(context, resourceId)?.toBitmap()?: throw Exception("Could Not find Resource")
             var alpha = 100
-            if(location.visited && location.pin != R.drawable.ic_liked_pin) {
+            if(location.visited && resourceId != R.drawable.ic_liked_pin) {
 
                 icon = makeTransparent( icon,alpha)
                 alpha = 25
-            } else if(location.pin == R.drawable.ic_liked_pin) alpha = 25
+            } else if(resourceId == R.drawable.ic_liked_pin) alpha = 25
 
             Circle(
                 center = LatLng(location.latitude, location.longitude),

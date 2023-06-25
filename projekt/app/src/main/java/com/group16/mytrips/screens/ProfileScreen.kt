@@ -44,6 +44,7 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.RectangleShape
 import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.layout.ContentScale
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.vectorResource
 import androidx.compose.ui.text.font.FontWeight
@@ -303,15 +304,17 @@ fun SightCard(
                 )
             }
             Text(text = sight.date.substring(0, 10), fontSize = 14.sp, fontWeight = FontWeight.Bold)
+            val context  = LocalContext.current
+            val resourceId = context.resources.getIdentifier(sight.pin, "drawable", context.packageName)
             var xp = 30
             var icon = R.drawable.ic_heart_custom_gray
             var shouldUpdate = true
 
-            if (sight.pin == R.drawable.ic_special_pin) {
+            if (resourceId == R.drawable.ic_special_pin) {
                 xp = 50
                 icon = R.drawable.ic_special_icon
                 shouldUpdate = false
-            } else if (sight.pin == R.drawable.ic_liked_pin) icon = R.drawable.ic_heart_custom
+            } else if (resourceId == R.drawable.ic_liked_pin) icon = R.drawable.ic_heart_custom
             Row(
                 horizontalArrangement = Arrangement.SpaceAround,
                 verticalAlignment = Alignment.Bottom

@@ -44,7 +44,7 @@ data class DefaultSightFB(
     val longitude: Double = -1.0,
     var distance: Int? = null,
     var visited: Boolean = false,
-    var pin : Int = R.drawable.ic_standard_pin
+    var pin : String = "ic_standard_pin"
 )
 
 data class SightFB(
@@ -56,5 +56,5 @@ data class SightFB(
     val date: String = "01.01.1900",
     val latitude: Double = -1.0,
     val longitude: Double = -1.0,
-    var pin: Int =  R.drawable.ic_standard_pin
+    var pin: String =  "ic_standard_pin"
 )

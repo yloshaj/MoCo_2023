@@ -1,6 +1,7 @@
 package com.group16.mytrips.screens
 
 import android.Manifest
+import androidx.appcompat.content.res.AppCompatResources
 import androidx.compose.animation.AnimatedVisibility
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
@@ -41,15 +42,18 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.unit.dp
 import com.group16.mytrips.R
+import android.content.res.Resources
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.livedata.observeAsState
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.draw.alpha
 import androidx.compose.ui.draw.scale
 import androidx.compose.ui.input.pointer.pointerInput
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.LocalFocusManager
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.sp
+import androidx.core.content.ContextCompat
 import coil.compose.SubcomposeAsyncImage
 import com.google.android.gms.maps.model.CameraPosition
 import com.google.android.gms.maps.model.LatLng
@@ -282,7 +286,8 @@ fun LocationCard(
                 horizontalArrangement = Arrangement.SpaceEvenly,
                 modifier = Modifier.fillMaxSize()
             ) {
-                val locPoint = sight.pin
+                val context = LocalContext.current
+                val locPoint = context.resources.getIdentifier(sight.pin, "drawable", context.packageName)
                 var alpha = 1f
                 if (sight.visited && locPoint != R.drawable.ic_liked_pin) alpha =  0.4f
                 Image(

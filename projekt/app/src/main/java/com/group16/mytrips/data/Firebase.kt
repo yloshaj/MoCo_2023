@@ -23,7 +23,7 @@ object Firebase {
     fun setUserId(id: String) {
         userId = id
     }
-    val likeIcon = R.drawable.ic_liked_pin
+    val likeIcon = "ic_liked_pin"
     private val dataId = "lHHoUXSufghEL9ln6l77"
 
     suspend fun uploadImage(uri: String): String {
@@ -52,7 +52,7 @@ object Firebase {
             pin = defaultSight.pin
         )
         var xp = 30
-        if (defaultSight.pin  == R.drawable.ic_special_pin) xp =  50
+        if (defaultSight.pin  == "ic_special_pin") xp =  50
         addSight(newSight)
         updateXP(xp)
 
@@ -68,9 +68,9 @@ object Firebase {
         val firestore = getFirestoreInstance()
         val sightRef = firestore.collection("SightFB")
         val sightQuery = sightRef.whereEqualTo("sightId", sight.sightId)
-        var value = R.drawable.ic_liked_pin
+        var value = "ic_liked_pin"
 
-        if (sight.pin == value) value = R.drawable.ic_standard_pin
+        if (sight.pin == value) value = "ic_standard_pin"
         sightQuery.get()
             .addOnSuccessListener { documents ->
                 for (document in documents) {
@@ -276,7 +276,7 @@ object Firebase {
                     if (sightList.any { it.sightId == sight.sightId }){
                         sight.visited = true
                         val lsight = sightList.first { it.sightId == sight.sightId }
-                        if (lsight.pin == R.drawable.ic_liked_pin) sight.pin = R.drawable.ic_liked_pin
+                        if (lsight.pin == "ic_liked_pin") sight.pin = "ic_liked_pin"
                     }
 
                 }
