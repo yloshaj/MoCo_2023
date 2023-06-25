@@ -100,7 +100,7 @@ fun SightScreen(sightId: String?, profileViewModel: ProfileViewModel) {
 }
 
 @Composable
-fun ProfileScreen(
+fun Profile(
     profileViewModel: ProfileViewModel,
     onItemClicked: (sightId: String) -> Unit
 ) {
@@ -298,19 +298,16 @@ fun SightCard(sight: SightFB, onItemClicked: (sightId: String) -> Unit) {
 
 //@Preview(showBackground = true)
 @Composable
-fun PreviewHeader(
+fun Profile(
     onItemClicked: (sightId: String) -> Unit,
     profileViewModel: ProfileViewModel
 ) {
-    val l = profileViewModel.sightList.collectAsState()
-    val av = profileViewModel.avatarList.collectAsState()
+
     LaunchedEffect(Unit) {
         profileViewModel.startListeningForData()
 
     }
-    //Text(text = l.value.size.toString())
-    //Text(text = av.value.size.toString())
-    ProfileScreen(profileViewModel, onItemClicked)
+    Profile(profileViewModel, onItemClicked)
     
 }
 

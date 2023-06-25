@@ -46,7 +46,7 @@ fun Navigation(
 ) {
     NavHost(navController = navController, startDestination = NavigationRoute.LoginScreen.route) {
         composable(NavigationRoute.ProfileScreen.route) {
-            PreviewHeader ({ sightId ->
+            Profile({ sightId ->
                 navController.navigate(NavigationRoute.DetailedSightScreen.route + "/ $sightId") {
                     popUpTo(NavigationRoute.ProfileScreen.route)
                 }
@@ -69,7 +69,9 @@ fun Navigation(
             Login(viewModel = loginViewModel, showBottomBar) {
                 navController.navigate(
                     NavigationRoute.ProfileScreen.route
-                ) {popUpTo(NavigationRoute.ProfileScreen.route)}
+                ) {
+                    navController.popBackStack()
+                }
             }
         }
 

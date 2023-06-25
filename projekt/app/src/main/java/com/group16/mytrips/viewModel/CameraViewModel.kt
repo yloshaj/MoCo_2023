@@ -121,6 +121,7 @@ class CameraViewModel(application: Application): AndroidViewModel(application) {
         }
         list.value.sortBy { it.distance }
         if (location != null) list.value.retainAll { it.distance!! <= _radius.value }
+        else list.value.removeAll { true }
 
         return list
     }

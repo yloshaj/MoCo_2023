@@ -73,7 +73,6 @@ class NavigationViewModel(application: Application) : AndroidViewModel(applicati
         val list = _defaultSightList.asStateFlow()
         val location = getLocationLiveData().value
         list.value.forEach {
-            //val location = getLocationLiveData().value
             if (location == null) it.distance = null
             else
                 it.distance = distanceInMeter(
@@ -83,11 +82,12 @@ class NavigationViewModel(application: Application) : AndroidViewModel(applicati
                     it.longitude
                 )
         }
-        val visitedList = list.value.filter { it.visited }.sortedBy { it.distance }
-        list.value.retainAll { !it.visited }
-        list.value.sortBy { it.distance }
-        list.value.addAll(visitedList)
-
+        if (!list.value.any { it.distance == null }) {
+            val visitedList = list.value.filter { it.visited }.sortedBy { it.distance }
+            list.value.retainAll { !it.visited }
+            list.value.sortBy { it.distance }
+            list.value.addAll(visitedList)
+        }
         return list
     }
 
