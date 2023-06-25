@@ -23,7 +23,7 @@ object Firebase {
     fun setUserId(id: String) {
         userId = id
     }
-
+    val likeIcon = R.drawable.ic_liked_pin
     private val dataId = "lHHoUXSufghEL9ln6l77"
 
     suspend fun uploadImage(uri: String): String {

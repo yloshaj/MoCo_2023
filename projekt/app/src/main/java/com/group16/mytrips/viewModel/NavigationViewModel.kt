@@ -83,8 +83,8 @@ class NavigationViewModel(application: Application) : AndroidViewModel(applicati
                 )
         }
         if (!list.value.any { it.distance == null }) {
-            val visitedList = list.value.filter { it.visited }.sortedBy { it.distance }
-            list.value.retainAll { !it.visited }
+            val visitedList = list.value.filter { it.visited && it.pin != Firebase.likeIcon}.sortedBy { it.distance }
+            list.value.retainAll { !it.visited || it.pin == Firebase.likeIcon }
             list.value.sortBy { it.distance }
             list.value.addAll(visitedList)
         }
