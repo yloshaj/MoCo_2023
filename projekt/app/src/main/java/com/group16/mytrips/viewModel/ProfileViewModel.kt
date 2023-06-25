@@ -53,6 +53,10 @@ class ProfileViewModel : ViewModel() {
         Firebase.updateAvatar(path)
     }
 
+    fun updateLiked(sight: SightFB) = viewModelScope.launch(Dispatchers.Default) {
+        Firebase.updateIcon(sight)
+    }
+
     fun startListeningForData() {
         startListeningForUser()
         startListeningForSightList()

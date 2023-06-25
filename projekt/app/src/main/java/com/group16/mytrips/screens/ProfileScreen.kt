@@ -51,9 +51,11 @@ import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import coil.compose.SubcomposeAsyncImage
+import com.group16.mytrips.R
 import com.group16.mytrips.data.Avatar
 import com.group16.mytrips.data.SightFB
 import com.group16.mytrips.viewModel.ProfileViewModel
+import kotlinx.coroutines.Job
 import kotlin.math.roundToInt
 
 
@@ -83,8 +85,11 @@ fun SightScreen(sightId: String?, profileViewModel: ProfileViewModel) {
             model = currentSight.picture,
             contentDescription = null,
             modifier = Modifier.fillMaxSize(), loading = {
-                Box( modifier = Modifier.size(100.dp), contentAlignment = Alignment.Center) {
-                    CircularProgressIndicator(color = Color.LightGray, modifier = Modifier.size(100.dp))
+                Box(modifier = Modifier.size(100.dp), contentAlignment = Alignment.Center) {
+                    CircularProgressIndicator(
+                        color = Color.LightGray,
+                        modifier = Modifier.size(100.dp)
+                    )
                 }
 
             }
@@ -112,7 +117,7 @@ fun Profile(
     )
     Column {
         ProfileHeader(profileViewModel)
-        SightGrid(list = sights, onItemClicked)
+        SightGrid(list = sights, onItemClicked, profileViewModel::updateLiked)
     }
 }
 
@@ -229,7 +234,11 @@ fun LevelBar(overAllXP: Int) {
 }
 
 @Composable
-fun SightGrid(list: State<List<SightFB>>, onItemClicked: (userId: String) -> Unit) {
+fun SightGrid(
+    list: State<List<SightFB>>,
+    onItemClicked: (userId: String) -> Unit,
+    updateLiked: (SightFB) -> Job
+) {
 
     LazyVerticalGrid(
         columns = GridCells.Fixed(2),
@@ -238,7 +247,8 @@ fun SightGrid(list: State<List<SightFB>>, onItemClicked: (userId: String) -> Uni
         items(list.value.size) { it ->
             SightCard(
                 sight = list.value[it],
-                onItemClicked = onItemClicked
+                onItemClicked = onItemClicked,
+                updateLiked = updateLiked
             )
         }
     }
@@ -246,7 +256,11 @@ fun SightGrid(list: State<List<SightFB>>, onItemClicked: (userId: String) -> Uni
 
 
 @Composable
-fun SightCard(sight: SightFB, onItemClicked: (sightId: String) -> Unit) {
+fun SightCard(
+    sight: SightFB,
+    onItemClicked: (sightId: String) -> Unit,
+    updateLiked: (SightFB) -> Job
+) {
     Card(
         modifier = Modifier
             .widthIn(0.dp, 156.dp)
@@ -262,10 +276,15 @@ fun SightCard(sight: SightFB, onItemClicked: (sightId: String) -> Unit) {
                     .size(156.dp, 118.dp)
                     .padding(0.dp, 0.dp)
             ) {
-                SubcomposeAsyncImage(model = sight.thumbnail, contentDescription = null, modifier = Modifier.fillMaxSize(),
+                SubcomposeAsyncImage(model = sight.thumbnail,
+                    contentDescription = null,
+                    modifier = Modifier.fillMaxSize(),
                     loading = {
                         Box(modifier = Modifier.size(50.dp), contentAlignment = Alignment.Center) {
-                            CircularProgressIndicator(color = Color.LightGray, modifier = Modifier.size(50.dp))
+                            CircularProgressIndicator(
+                                color = Color.LightGray,
+                                modifier = Modifier.size(50.dp)
+                            )
                         }
                     }
                 )
@@ -283,14 +302,46 @@ fun SightCard(sight: SightFB, onItemClicked: (sightId: String) -> Unit) {
                     maxLines = 2,
                 )
             }
-            Text(text = sight.date.substring(0,10), fontSize = 14.sp, fontWeight = FontWeight.Bold)
-            Text(
+            Text(text = sight.date.substring(0, 10), fontSize = 14.sp, fontWeight = FontWeight.Bold)
+            var xp = 30
+            var icon = R.drawable.ic_heart_custom_gray
+            var shouldUpdate = true
+
+            if (sight.pin == R.drawable.ic_special_pin) {
+                xp = 50
+                icon = R.drawable.ic_special_icon
+                shouldUpdate = false
+            } else if (sight.pin == R.drawable.ic_liked_pin) icon = R.drawable.ic_heart_custom
+            Row(
+                horizontalArrangement = Arrangement.SpaceAround,
+                verticalAlignment = Alignment.Bottom
+            ) {
+                Text(text = "+$xp xp", modifier = Modifier.weight(0.2f))
+                Box(modifier = Modifier.weight(0.2f))
+                Box(modifier = Modifier
+                    .size(30.dp)
+                    .weight(0.1f)) {
+                    Icon(
+                        imageVector = ImageVector.vectorResource(id = icon),
+                        contentDescription = "heart",
+                        tint = Color.Unspecified,
+                        modifier = Modifier
+                            .padding(2.dp)
+                            .fillMaxSize()
+                            .clickable { if (shouldUpdate) updateLiked(sight) })
+                }
+            }
+
+
+            /*Text(
                 text = "${sight.latitude}, ${sight.longitude}",
                 fontSize = 13.sp,
                 overflow = TextOverflow.Ellipsis,
                 modifier = Modifier.widthIn(0.dp, 156.dp),
                 maxLines = 1
             )
+
+             */
         }
     }
 }
@@ -308,11 +359,8 @@ fun Profile(
 
     }
     Profile(profileViewModel, onItemClicked)
-    
+
 }
-
-
-
 
 
 @Composable

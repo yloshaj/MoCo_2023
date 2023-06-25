@@ -7,6 +7,7 @@ import com.google.firebase.firestore.ListenerRegistration
 import com.google.firebase.firestore.Query
 import com.google.firebase.firestore.SetOptions
 import com.google.firebase.storage.FirebaseStorage
+import com.group16.mytrips.R
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.channels.awaitClose
 import kotlinx.coroutines.flow.callbackFlow
@@ -48,9 +49,12 @@ object Firebase {
             latitude = defaultSight.latitude,
             longitude = defaultSight.longitude,
             date = getDate(),
+            pin = defaultSight.pin
         )
+        var xp = 30
+        if (defaultSight.pin  == R.drawable.ic_special_pin) xp =  50
         addSight(newSight)
-        updateXP(20)
+        updateXP(xp)
 
     }
 
@@ -59,6 +63,32 @@ object Firebase {
         val collectionRef = firestore.collection("SightFB")
         collectionRef.add(sight)
     }
+
+    fun updateIcon(sight: SightFB) {
+        val firestore = getFirestoreInstance()
+        val sightRef = firestore.collection("SightFB")
+        val sightQuery = sightRef.whereEqualTo("sightId", sight.sightId)
+        var value = R.drawable.ic_liked_pin
+
+        if (sight.pin == value) value = R.drawable.ic_standard_pin
+        sightQuery.get()
+            .addOnSuccessListener { documents ->
+                for (document in documents) {
+                    document.reference
+                        .update("pin", value)
+                        .addOnSuccessListener {
+                            println("Pin value updated successfully!")
+                        }
+                        .addOnFailureListener { e ->
+                            println("Error updating pin value: $e")
+                        }
+                }
+            }
+            .addOnFailureListener { e ->
+                println("Error retrieving document: $e")
+            }
+    }
+
 
     fun updateXP(increment: Int) {
         val firestore = getFirestoreInstance()
@@ -242,7 +272,14 @@ object Firebase {
                 val sights = snapshot?.documents?.mapNotNull { document ->
                     document.toObject(DefaultSightFB::class.java)
                 } ?: emptyList()
-                for (sight in sights) if (sightList.any { it.sightId == sight.sightId }) sight.visited = true
+                for (sight in sights) {
+                    if (sightList.any { it.sightId == sight.sightId }){
+                        sight.visited = true
+                        val lsight = sightList.first { it.sightId == sight.sightId }
+                        if (lsight.pin == R.drawable.ic_liked_pin) sight.pin = R.drawable.ic_liked_pin
+                    }
+
+                }
                 listener(sights)
             }
         }

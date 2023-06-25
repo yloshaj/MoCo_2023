@@ -2,6 +2,7 @@ package com.group16.mytrips.screens
 
 import android.Manifest
 import androidx.compose.animation.AnimatedVisibility
+import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.gestures.detectTapGestures
@@ -281,12 +282,13 @@ fun LocationCard(
                 horizontalArrangement = Arrangement.SpaceEvenly,
                 modifier = Modifier.fillMaxSize()
             ) {
-                var locPoint = R.drawable.ic_locpoint
-                if (sight.visited) locPoint = R.drawable.ic_locpoint_visited
-                Icon(
+                val locPoint = sight.pin
+                var alpha = 1f
+                if (sight.visited && locPoint != R.drawable.ic_liked_pin) alpha =  0.4f
+                Image(
                     painter = painterResource(id = locPoint),
                     contentDescription = "Blue Location Point",
-                    tint = Color.Unspecified
+                    alpha = alpha
                 )
                 Column(
                     modifier = Modifier

@@ -19,6 +19,7 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.unit.dp
 import androidx.core.graphics.drawable.toBitmap
+import androidx.core.graphics.scale
 import com.google.maps.android.compose.Circle
 import com.google.maps.android.compose.MapProperties
 import com.group16.mytrips.R
@@ -50,12 +51,14 @@ fun MapsSDK(
     ) {
 
         for (location in sightList.value) {
-            var icon = BitmapDescriptorFactory.defaultMarker(BitmapDescriptorFactory.HUE_AZURE)
+            //var icon = BitmapDescriptorFactory.defaultMarker(BitmapDescriptorFactory.HUE_AZURE)
+            var icon = AppCompatResources.getDrawable(LocalContext.current, location.pin)?.toBitmap()?: throw Exception("Could Not find Resource")
             var alpha = 100
-            if(location.visited) {
-                icon = BitmapDescriptorFactory.defaultMarker(BitmapDescriptorFactory.HUE_RED)
+            if(location.visited && location.pin != R.drawable.ic_liked_pin) {
+
+                icon = makeTransparent( icon,alpha)
                 alpha = 25
-            }
+            } else if(location.pin == R.drawable.ic_liked_pin) alpha = 25
 
             Circle(
                 center = LatLng(location.latitude, location.longitude),
@@ -67,7 +70,7 @@ fun MapsSDK(
             Marker(
                 MarkerState(LatLng(location.latitude, location.longitude)),
                 title = location.sightName,
-                icon = icon
+                icon = BitmapDescriptorFactory.fromBitmap(icon)
             )
 
         }
