@@ -74,6 +74,7 @@ class MainActivity : ComponentActivity() {
                             onItemClick = {
                                 navController.navigate(it.route) {
                                     popUpTo(NavigationRoute.ProfileScreen.route)
+                                    launchSingleTop = true
                                 }
                             })
                     }}

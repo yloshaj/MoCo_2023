@@ -70,7 +70,7 @@ fun Navigation(
                 navController.navigate(
                     NavigationRoute.ProfileScreen.route
                 ) {
-                    navController.popBackStack()
+                    popUpTo(NavigationRoute.LoginScreen.route)
                 }
             }
         }
