@@ -27,7 +27,7 @@ class ProfileViewModel : ViewModel() {
 
     fun startListeningForUser() {
         Firebase.startListeningForUser { user ->
-            viewModelScope.launch(Dispatchers.Default) {
+            viewModelScope.launch(Dispatchers.IO) {
                 _user.value = user
             }
         }
@@ -35,7 +35,7 @@ class ProfileViewModel : ViewModel() {
 
     fun startListeningForSightList() {
         Firebase.startListeningForSightList { sights ->
-            viewModelScope.launch(Dispatchers.Default) {
+            viewModelScope.launch(Dispatchers.IO) {
                 _sightList.value = sights
             }
         }
@@ -43,17 +43,17 @@ class ProfileViewModel : ViewModel() {
 
     fun startListeningForAvatarList() {
         Firebase.startListeningForAvatarList { avatare ->
-            viewModelScope.launch(Dispatchers.Default) {
+            viewModelScope.launch(Dispatchers.IO) {
                 _avatarList.value = avatare
             }
         }
     }
 
-    fun updateAvatar(path: Int) = viewModelScope.launch(Dispatchers.Default) {
+    fun updateAvatar(path: Int) = viewModelScope.launch(Dispatchers.IO) {
         Firebase.updateAvatar(path)
     }
 
-    fun updateLiked(sight: SightFB) = viewModelScope.launch(Dispatchers.Default) {
+    fun updateLiked(sight: SightFB) = viewModelScope.launch(Dispatchers.IO) {
         Firebase.updateIcon(sight)
     }
 

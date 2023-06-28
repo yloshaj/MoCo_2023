@@ -23,7 +23,7 @@ class LoginViewModel: ViewModel() {
 
     fun startListeningUserList() {
         Firebase.startListeningForUserList { userList ->
-            viewModelScope.launch(Dispatchers.Default) {
+            viewModelScope.launch(Dispatchers.IO) {
                 _userList.value = userList
             }
         }

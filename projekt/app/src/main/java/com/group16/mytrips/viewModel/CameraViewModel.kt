@@ -61,7 +61,7 @@ class CameraViewModel(application: Application): AndroidViewModel(application) {
     fun alreadyVisited() = _currentSight.value.visited
     fun startListeningForDefaultSightList() {
         Firebase.startListeningForDefaultSightList { sights ->
-            viewModelScope.launch(Dispatchers.Default) {
+            viewModelScope.launch(Dispatchers.IO) {
                 _defaultSightList.value = sights as MutableList<DefaultSightFB>
             }
         }
@@ -70,7 +70,7 @@ class CameraViewModel(application: Application): AndroidViewModel(application) {
 
     fun startListeningForRadius() {
         Firebase.startListeningForRadius { radius ->
-            viewModelScope.launch(Dispatchers.Default) {
+            viewModelScope.launch(Dispatchers.IO) {
                 _radius.value = radius
             }
         }

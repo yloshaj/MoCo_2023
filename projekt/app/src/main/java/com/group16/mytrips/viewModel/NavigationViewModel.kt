@@ -50,7 +50,7 @@ class NavigationViewModel(application: Application) : AndroidViewModel(applicati
 
     fun startListeningForDeFaultSightList() {
         Firebase.startListeningForDefaultSightList { defaultSights ->
-            viewModelScope.launch(Dispatchers.Default) {
+            viewModelScope.launch(Dispatchers.IO) {
                 _defaultSightList.value = defaultSights as MutableList<DefaultSightFB>
             }
         }
@@ -58,7 +58,7 @@ class NavigationViewModel(application: Application) : AndroidViewModel(applicati
 
     fun startListeningForRadius() {
         Firebase.startListeningForRadius { radius ->
-            viewModelScope.launch(Dispatchers.Default) {
+            viewModelScope.launch(Dispatchers.IO) {
                 _radius.value = radius
             }
         }
