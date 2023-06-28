@@ -1,7 +1,6 @@
 package com.group16.mytrips.screens
 
-import android.graphics.BitmapFactory
-import android.graphics.drawable.BitmapDrawable
+
 import androidx.appcompat.content.res.AppCompatResources
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.State
@@ -19,7 +18,6 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.unit.dp
 import androidx.core.graphics.drawable.toBitmap
-import androidx.core.graphics.scale
 import com.google.maps.android.compose.Circle
 import com.google.maps.android.compose.MapProperties
 import com.group16.mytrips.R
@@ -35,14 +33,13 @@ fun MapsSDK(
     cameraPosition: CameraPositionState,
     navigationViewModel: NavigationViewModel
 ) {
-
+    val context = LocalContext.current
     val loc = navigationViewModel.getLocationLiveData().observeAsState()
     val radius = navigationViewModel.radius.collectAsState()
     val mapProperties = MapProperties(
         isMyLocationEnabled = loc.value != null,
 
         )
-    //val iconasd = AppCompatResources.getDrawable(LocalContext.current, R.drawable.ic_locpoint)?.toBitmap(70,115)?: throw Exception("Could Not find Resource")
     GoogleMap(
         modifier = modifier,
         cameraPositionState = cameraPosition,
@@ -51,15 +48,15 @@ fun MapsSDK(
     ) {
 
         for (location in sightList.value) {
-            //var icon = BitmapDescriptorFactory.defaultMarker(BitmapDescriptorFactory.HUE_AZURE)
-            val context = LocalContext.current
+
             val resourceId = context.resources.getIdentifier(location.pin, "drawable", context.packageName)
-            var icon = AppCompatResources.getDrawable(context, resourceId)?.toBitmap()?: throw Exception("Could Not find Resource")
+            var icon = AppCompatResources.getDrawable(context, resourceId)?.toBitmap()?: throw Exception("Could Not find Resource!")
             var alpha = 100
             if(location.visited && resourceId != R.drawable.ic_liked_pin) {
 
                 icon = makeTransparent( icon,alpha)
                 alpha = 25
+
             } else if(resourceId == R.drawable.ic_liked_pin) alpha = 25
 
             Circle(

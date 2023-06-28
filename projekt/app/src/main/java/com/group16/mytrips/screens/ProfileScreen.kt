@@ -335,16 +335,6 @@ fun SightCard(
                 }
             }
 
-
-            /*Text(
-                text = "${sight.latitude}, ${sight.longitude}",
-                fontSize = 13.sp,
-                overflow = TextOverflow.Ellipsis,
-                modifier = Modifier.widthIn(0.dp, 156.dp),
-                maxLines = 1
-            )
-
-             */
         }
     }
 }

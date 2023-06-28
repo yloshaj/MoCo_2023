@@ -5,16 +5,20 @@ import android.graphics.Canvas
 import android.graphics.Paint
 import android.location.Location
 import com.group16.mytrips.data.SightFB
+import java.text.SimpleDateFormat
 import java.util.Calendar
+import java.util.Locale
 import java.util.TimeZone
 import kotlin.math.roundToInt
 
 
-fun sortByDate(list: List<SightFB>) = list.sortedByDescending {
-    (it.date.substring(6, 10).toDouble() * 10000) + (it.date.substring(3, 5)
-        .toDouble() * 100) + it.date.substring(0, 2).toDouble() + (it.date.substring(11, 13)
-        .toDouble() / 100) + it.date.substring(14, 16).toDouble() / 10000 + it.date.substring(17, 19)
-        .toDouble() / 1000000
+
+fun sortByDate(sights: List<SightFB>): List<SightFB> {
+    return sights.sortedByDescending {
+        val dateFormat = SimpleDateFormat("dd.MM.yyyy HH:mm:ss", Locale.getDefault())
+        val date = dateFormat.parse(it.date)
+        date?.time ?: 0
+    }
 }
 
 
@@ -38,6 +42,7 @@ fun getDate(): String {
     if (month < 10) monthString = "0$monthString"
     return "$dayString.$monthString.$year $hourString:$minuteString:$secondString"
 }
+
 
 fun distanceInMeter(
     startLat: Double,

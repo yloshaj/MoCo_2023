@@ -7,7 +7,6 @@ import com.google.firebase.firestore.ListenerRegistration
 import com.google.firebase.firestore.Query
 import com.google.firebase.firestore.SetOptions
 import com.google.firebase.storage.FirebaseStorage
-import com.group16.mytrips.R
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.channels.awaitClose
 import kotlinx.coroutines.flow.callbackFlow
@@ -107,18 +106,18 @@ object Firebase {
 
                         documentRef.set(updatedData, SetOptions.merge())
                             .addOnSuccessListener {
-                                Log.d("com.group16.mytrips.data.Firebase", "XP Value Updated")
+                                Log.d("Firebase", "XP Value Updated")
                             }
                             .addOnFailureListener { exception ->
-                                Log.e("com.group16.mytrips.data.Firebase", "Following Exception occurred $exception")
+                                Log.e("Firebase", "Following Exception occurred $exception")
                             }
                     }
                 } else {
-                    Log.e("com.group16.mytrips.data.Firebase", "Document does not exist")
+                    Log.e("Firebase", "Document does not exist")
                 }
             }
             .addOnFailureListener { exception ->
-                Log.e("com.group16.mytrips.data.Firebase", "Following Exception occurred $exception")
+                Log.e("Firebase", "Following Exception occurred $exception")
             }
     }
 

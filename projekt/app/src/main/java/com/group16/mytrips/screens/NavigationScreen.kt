@@ -43,6 +43,7 @@ import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.unit.dp
 import com.group16.mytrips.R
 import android.content.res.Resources
+import androidx.compose.material3.Surface
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.livedata.observeAsState
 import androidx.compose.ui.Alignment
@@ -310,11 +311,14 @@ fun LocationCard(
                     )
                     Text(text = adjustedDistance, fontSize = 14.sp)
                 }
-                SubcomposeAsyncImage(model = sight.thumbnail, contentDescription = null, loading = {
-                    Box(modifier = Modifier.size(20.dp), contentAlignment = Alignment.Center) {
-                        CircularProgressIndicator(color = Color.LightGray, modifier = Modifier.size(20.dp))
-                    }
-                }, modifier = Modifier.size(78.dp, 59.dp))
+                Surface(shape = ShapeDefaults.ExtraSmall, modifier = Modifier.size(78.dp,59.dp), shadowElevation = 1.dp, color = Color.White) {
+                    SubcomposeAsyncImage(model = sight.thumbnail, contentDescription = null, loading = {
+                        Box(modifier = Modifier.size(20.dp), contentAlignment = Alignment.Center) {
+                            CircularProgressIndicator(color = Color.LightGray, modifier = Modifier.size(20.dp))
+                        }
+                    }, modifier = Modifier.fillMaxSize())
+                }
+
 
 
             }

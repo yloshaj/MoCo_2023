@@ -11,7 +11,6 @@ import com.group16.mytrips.data.DefaultSightFB
 import com.group16.mytrips.data.Firebase
 import com.group16.mytrips.data.LocationLiveData
 import com.group16.mytrips.misc.distanceInMeter
-import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.SharingStarted
@@ -84,16 +83,15 @@ class NavigationViewModel(application: Application) : AndroidViewModel(applicati
         }
         if (!list.value.any { it.distance == null }) {
             val visitedList = list.value.filter { it.visited && it.pin != Firebase.likeIcon}.sortedBy { it.distance }
-            list.value.retainAll { !it.visited || it.pin == Firebase.likeIcon }
+            list.value.removeAll(visitedList)
             list.value.sortBy { it.distance }
             list.value.addAll(visitedList)
         }
         return list
     }
 
-    private val viewModelCoroutineScope = CoroutineScope(viewModelScope.coroutineContext)
     fun moveCameraPosition(cameraPositionState: CameraPositionState, latLng: LatLng) {
-        viewModelCoroutineScope.launch {
+        viewModelScope.launch(Dispatchers.Main) {
             cameraPositionState.animate(
                 CameraUpdateFactory.newCameraPosition(
                     CameraPosition.fromLatLngZoom(
