@@ -4,9 +4,11 @@ import android.app.Application
 import android.util.Log
 import androidx.lifecycle.AndroidViewModel
 import androidx.lifecycle.viewModelScope
+import androidx.work.WorkManager
 import com.group16.mytrips.data.DefaultSightFB
 import com.group16.mytrips.data.Firebase
 import com.group16.mytrips.data.LocationLiveData
+import com.group16.mytrips.data.UploadNewSightWorker
 import com.group16.mytrips.misc.distanceInMeter
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.MutableStateFlow
@@ -79,6 +81,15 @@ class CameraViewModel(application: Application): AndroidViewModel(application) {
     fun startListeningForData() {
         startListeningForDefaultSightList()
         startListeningForRadius()
+    }
+
+    fun uploadNewSightUsingWorkManager(newPictures: Boolean) {
+        if (!alreadyVisited()) {
+            _currentSight.value.visited = true
+            val workRequest = UploadNewSightWorker.createWorkRequest(newPictures, _currentSight.value, _uriList.value)
+            val workManager = WorkManager.getInstance(getApplication())
+            workManager.enqueue(workRequest)
+        }
     }
 
     fun uploadNewSight(newPictures: Boolean) {

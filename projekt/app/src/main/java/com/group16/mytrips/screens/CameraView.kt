@@ -212,12 +212,12 @@ private fun CameraPreviewView(
                 onDismissRequest = { viewModel.setAlert(false) },
                 confirmButton = {
                     Button(
-                        onClick = { viewModel.setAlert(false); viewModel.uploadNewSight(true) }) {
+                        onClick = { viewModel.setAlert(false); viewModel.uploadNewSightUsingWorkManager(true) }) {
                         Text(text = "Ja")
                     }
                 },
                 text = { Text(text = "Dieses Bild verwenden? Ansonsten wird das Defaultbild verwendet") },
-                dismissButton = { Button(onClick = { viewModel.setAlert(false); viewModel.uploadNewSight(false)}) {
+                dismissButton = { Button(onClick = { viewModel.setAlert(false); viewModel.uploadNewSightUsingWorkManager(false)}) {
                     Text(text = "Nein")
                 }}
             )

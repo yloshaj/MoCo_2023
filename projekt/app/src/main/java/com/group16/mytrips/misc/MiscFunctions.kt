@@ -3,8 +3,10 @@ package com.group16.mytrips.misc
 import android.graphics.Bitmap
 import android.graphics.Canvas
 import android.graphics.Paint
+import com.google.gson.Gson
 import android.location.Location
 import com.group16.mytrips.data.SightFB
+import com.group16.mytrips.data.DefaultSightFB
 import java.text.SimpleDateFormat
 import java.util.Calendar
 import java.util.Locale
@@ -66,4 +68,9 @@ fun makeTransparent(src: Bitmap, value: Int): Bitmap {
     paint.setAlpha(value)
     canvas.drawBitmap(src, 0f, 0f, paint)
     return transBitmap
+}
+
+fun toJson(sight: DefaultSightFB): String {
+    val gson = Gson()
+    return gson.toJson(sight)
 }
