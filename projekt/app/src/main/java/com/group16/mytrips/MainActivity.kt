@@ -3,6 +3,7 @@ package com.group16.mytrips
 import android.os.Bundle
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
+import androidx.activity.viewModels
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.padding
@@ -38,10 +39,10 @@ class MainActivity : ComponentActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContent {
-            val profileViewModel = ProfileViewModel()
-            val cameraViewModel = CameraViewModel(this.application)
-            val appViewModel = NavigationViewModel(this.application)
-            val loginViewModel = LoginViewModel()
+            val profileViewModel by viewModels<ProfileViewModel>()
+            val cameraViewModel by viewModels<CameraViewModel>()
+            val navigationViewModel by viewModels<NavigationViewModel>()
+            val loginViewModel by viewModels<LoginViewModel>()
 
 
             MyTripsTheme {
@@ -90,7 +91,7 @@ class MainActivity : ComponentActivity() {
                                 )
                             )
                     ) {
-                        Navigation(navController = navController, appViewModel, profileViewModel, cameraViewModel, loginViewModel, showBottomBar)
+                        Navigation(navController = navController, navigationViewModel, profileViewModel, cameraViewModel, loginViewModel, showBottomBar)
                     }
                 }
 
