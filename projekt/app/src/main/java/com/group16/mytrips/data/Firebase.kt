@@ -12,6 +12,7 @@ import kotlinx.coroutines.channels.awaitClose
 import kotlinx.coroutines.flow.callbackFlow
 import com.group16.mytrips.misc.getDate
 import com.group16.mytrips.misc.sortByDate
+import kotlinx.coroutines.flow.flowOf
 import kotlinx.coroutines.tasks.await
 import java.util.UUID
 
@@ -134,42 +135,28 @@ object Firebase {
             .addOnFailureListener { Log.e("com.group16.mytrips.data.Firebase", "$it") }
     }
 
-    private fun Query.asFlow(): Flow<List<DefaultSightFB>> = callbackFlow {
-        val snapshotListener = addSnapshotListener { snapshot, error ->
-            if (error != null) {
-                close(error)
-                return@addSnapshotListener
-            }
 
-            val sights = snapshot?.documents?.mapNotNull { document ->
-                document.toObject(DefaultSightFB::class.java)
-            } ?: emptyList()
 
-            try {
-                trySend(sights).isSuccess
-            } catch (e: Exception) {
-                Log.e("Firestore Query", "$e")
-            }
-        }
-        awaitClose {
-            snapshotListener.remove()
-        }
-    }
-
-    fun searchDefaultSights(query: String): Flow<List<DefaultSightFB>> {
+    suspend fun searchDefaultSights(query: String): Flow<List<DefaultSightFB>> {
         val firestore = getFirestoreInstance()
         val collectionRef = firestore.collection("DefaultSightFB")
 
 
         val searchQuery = if (query.isBlank()) {
+            emptyList()
 
-            collectionRef.whereEqualTo("sightName", "")
         } else {
             collectionRef.whereGreaterThanOrEqualTo("sightName", query)
                 .whereLessThanOrEqualTo("sightName", query + "\uF7FF")
+                .get()
+                .await()
+                .documents
+                .mapNotNull { documentSnapshot ->
+                    documentSnapshot.toObject(DefaultSightFB::class.java)
+                }
         }
 
-        return searchQuery.asFlow()
+        return flowOf(searchQuery)
     }
 
 
