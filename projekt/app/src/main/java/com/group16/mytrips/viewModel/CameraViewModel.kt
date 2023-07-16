@@ -92,31 +92,6 @@ class CameraViewModel(application: Application): AndroidViewModel(application) {
         }
     }
 
-    fun uploadNewSight(newPictures: Boolean) {
-        if (!alreadyVisited()) {
-            viewModelScope.launch(Dispatchers.IO) {
-                _currentSight.value.visited = true
-                try {
-                    if (!newPictures) {
-                        Firebase.uploadNewSight(null, null, _currentSight.value)
-                    } else {
-                        val downloadUrls = _uriList.value.map { uri ->
-                            Firebase.uploadImage(uri)
-                        }
-                        Firebase.uploadNewSight(
-                            downloadUrls.getOrNull(0),
-                            downloadUrls.getOrNull(1),
-                            _currentSight.value
-                        )
-                    }
-                } catch (e: Exception) {
-                    Log.e("com.group16.mytrips.data.Firebase Storage", e.toString())
-                }
-            }
-        }
-
-    }
-
     fun getSortedList(): StateFlow<MutableList<DefaultSightFB>> {
         val location = getLocationLiveData().value
         val list = _defaultSightList.asStateFlow()
