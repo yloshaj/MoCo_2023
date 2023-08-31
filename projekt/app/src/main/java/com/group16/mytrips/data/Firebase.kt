@@ -66,7 +66,7 @@ object Firebase {
 
     fun updateIcon(sight: SightFB) {
         val firestore = getFirestoreInstance()
-        val sightRef = firestore.collection("SightFB")
+        val sightRef = firestore.collection("SightFB").whereEqualTo("userId", userId)
         val sightQuery = sightRef.whereEqualTo("sightId", sight.sightId)
         var value = "ic_liked_pin"
 
